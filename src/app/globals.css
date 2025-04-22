@@ -1,6 +1,21 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
+  --text-primary: #023047;
+  --text-secondary: #F5F7F8;
+  --bg-primary: #023047;
+  --bg-secondary: #F5F7F8;
+
+  --bg-button-primary : #023047;
+  --border-button-primary :  #F5F7F8;
+  --text-button-primary : #FFF;
+  --bg-button-primary-hover : #035066;
+
+  --bg-button-secondary : #F5F7F8;
+  --border-button-secondary :  #023047;
+  --text-button-secondary : #023047;
+  --bg-button-secondary-hover : #dfe5e8;
+
 }
 
 @media (prefers-color-scheme: dark) {
