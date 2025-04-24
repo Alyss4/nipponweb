@@ -1,7 +1,8 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Input } from '../../components/ComponentForm';
+import { useRouter } from 'next/navigation'; 
 
 export default function InscriptionPage() {
   const [nom, setNom] = useState('');
@@ -10,11 +11,32 @@ export default function InscriptionPage() {
   const [confirmation, setConfirmation] = useState('');
   const [erreur, setErreur] = useState('');
   const [message, setMessage] = useState('');
+  const [isClient, setIsClient] = useState(false); // Nouvel état pour vérifier si on est côté client
+  const [routerReady, setRouterReady] = useState(false); // Nouveau state pour vérifier si le router est prêt
+  const router = useRouter();
+
+  // Vérification si l'utilisateur est déjà connecté (seulement côté client)
+  useEffect(() => {
+    setIsClient(true); // On marque qu'on est maintenant côté client
+    if (typeof window !== 'undefined') {
+      setRouterReady(true); // Nous marquons que le routeur est prêt après le rendu
+    }
+  }, []);
+
+  // Utilisation de useEffect pour rediriger l'utilisateur après le montage du composant
+  useEffect(() => {
+    if (routerReady) {
+      const token = localStorage.getItem('token'); // ou récupérer depuis un cookie
+      if (token) {
+        // Si l'utilisateur est connecté (token présent), redirige vers une autre page
+        router.push('/dashboard');  // Par exemple, rediriger vers un tableau de bord ou une autre page.
+      }
+    }
+  }, [routerReady, router]);
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
   
-    // Vérifier que les mots de passe correspondent
     if (motDePasse !== confirmation) {
       setErreur("Les mots de passe ne correspondent pas.");
       return;
@@ -22,7 +44,6 @@ export default function InscriptionPage() {
   
     setErreur('');
   
-    // Préparer les données à envoyer
     const data = {
       nom,
       email,
@@ -30,11 +51,9 @@ export default function InscriptionPage() {
       confirmation
     };
   
-    // Récupérer le jeton CSRF depuis la balise meta
     const token = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
   
     try {
-      // Envoyer la requête à l'API Laravel avec fetch
       const response = await fetch('http://127.0.0.1:8000/api/inscription', {
         method: 'POST',
         headers: {
@@ -42,23 +61,35 @@ export default function InscriptionPage() {
         },
         body: JSON.stringify(data),
       });
-  
-      // Vérifier si la réponse est correcte
+    
+      const result = await response.json();
+    
+      console.log('Réponse API:', result);
+    
       if (response.ok) {
-        const result = await response.json();
-        setMessage('Inscription réussie !');
-        console.log(result); // Affiche la réponse de l'API si nécessaire
+        if (result.token) {
+          localStorage.setItem('token', result.token); // ✅ ENREGISTRE LE TOKEN !
+          setMessage('Inscription réussie !');
+          setErreur('');
+        }
       } else {
-        const errorData = await response.json();
-        setErreur(errorData.message || 'Une erreur est survenue.');
+        if (result.errors) {
+          const messages = Object.values(result.errors).flat().join(' ');
+          setErreur(messages);
+        } else {
+          setErreur(result.message || 'Une erreur est survenue.');
+        }
       }
     } catch (error) {
-      // En cas d'erreur de réseau ou de serveur
-      setErreur('Impossible de se connecter à l\'API.');
-      console.error('Error:', error);
+      console.error('Erreur FETCH ou parsing JSON:', error);
+      setErreur("Impossible de se connecter à l'API.");
     }
   };
-  
+
+  // Ne pas rendre le composant tant que nous ne sommes pas côté client et que le router est prêt
+  if (!isClient || !routerReady) {
+    return null;
+  }
 
   return (
     <div className="container" style={{ maxWidth: '400px', marginTop: '50px' }}>
@@ -111,11 +142,9 @@ export default function InscriptionPage() {
               marginTop: '10px'
             }}
             onMouseOver={(e) =>
-              (e.currentTarget.style.backgroundColor = 'var(--bg-button-primary-hover)')
-            }
+              (e.currentTarget.style.backgroundColor = 'var(--bg-button-primary-hover)')}
             onMouseOut={(e) =>
-              (e.currentTarget.style.backgroundColor = 'var(--bg-button-primary)')
-            }
+              (e.currentTarget.style.backgroundColor = 'var(--bg-button-primary)')}
           >
             S'inscrire
           </button>

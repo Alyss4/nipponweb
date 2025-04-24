@@ -15,11 +15,43 @@ export default function ConnexionPage() {
     setPassword(event.target.value);
   };
 
-  const handleSubmit = (event: React.FormEvent) => {
+  const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
-    console.log('Connexion > Email:', email);
-    console.log('Connexion > Password:', password);
+  
+    try {
+      const response = await fetch('http://127.0.0.1:8000/api/connexion', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: email,
+          motDePasse: password, // ce nom doit correspondre à celui attendu côté backend
+        }),
+      });
+  
+      const data = await response.json();
+  
+      if (!response.ok) {
+        // Gère les erreurs avec un message
+        console.error('Erreur de connexion :', data.message || 'Erreur inconnue');
+        alert(data.message || 'Erreur lors de la connexion');
+        return;
+      }
+  
+      // Connexion réussie : tu peux stocker l’utilisateur ou rediriger
+      console.log('Utilisateur connecté:', data.utilisateur);
+      alert('Connexion réussie !');
+  
+      // Exemple de redirection
+      // router.push('/dashboard'); (si tu utilises Next.js router)
+  
+    } catch (error) {
+      console.error('Erreur réseau ou serveur :', error);
+      alert('Impossible de se connecter à l’API');
+    }
   };
+  
 
   const handleInscription = () => {
     console.log('Redirection vers inscription...');
