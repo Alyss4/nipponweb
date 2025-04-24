@@ -2,10 +2,12 @@
 
 import React, { useState, ChangeEvent } from 'react';
 import { Input, ButtonPrimaryy, ButtonSecondaryy } from '../../components/ComponentForm';
+import { useRouter } from 'next/navigation';
 
 export default function ConnexionPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const router = useRouter();
 
   const handleEmailChange = (event: ChangeEvent<HTMLInputElement>) => {
     setEmail(event.target.value);
@@ -17,7 +19,7 @@ export default function ConnexionPage() {
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
-  
+
     try {
       const response = await fetch('http://127.0.0.1:8000/api/connexion', {
         method: 'POST',
@@ -26,35 +28,43 @@ export default function ConnexionPage() {
         },
         body: JSON.stringify({
           email: email,
-          motDePasse: password, // ce nom doit correspondre à celui attendu côté backend
+          motDePasse: password, 
         }),
       });
-  
+
       const data = await response.json();
-  
+
       if (!response.ok) {
-        // Gère les erreurs avec un message
         console.error('Erreur de connexion :', data.message || 'Erreur inconnue');
         alert(data.message || 'Erreur lors de la connexion');
         return;
       }
-  
-      // Connexion réussie : tu peux stocker l’utilisateur ou rediriger
-      console.log('Utilisateur connecté:', data.utilisateur);
+
+
+      localStorage.setItem('token', data.token);
+      localStorage.setItem('role', data.utilisateur.role);
+
       alert('Connexion réussie !');
-  
-      // Exemple de redirection
-      // router.push('/dashboard'); (si tu utilises Next.js router)
-  
+      console.log('Utilisateur connecté:', data.utilisateur);
+
+      const role = data.utilisateur.role;
+
+      if (role === 'admin') {
+        router.push('./');
+      } else if (role === 'user') {
+        router.push('./');
+      } else {
+        router.push('/');
+      }
+
     } catch (error) {
       console.error('Erreur réseau ou serveur :', error);
       alert('Impossible de se connecter à l’API');
     }
   };
-  
 
   const handleInscription = () => {
-    console.log('Redirection vers inscription...');
+    router.push('/inscription'); 
   };
 
   return (

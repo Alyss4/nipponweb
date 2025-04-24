@@ -11,25 +11,22 @@ export default function InscriptionPage() {
   const [confirmation, setConfirmation] = useState('');
   const [erreur, setErreur] = useState('');
   const [message, setMessage] = useState('');
-  const [isClient, setIsClient] = useState(false); // Nouvel état pour vérifier si on est côté client
-  const [routerReady, setRouterReady] = useState(false); // Nouveau state pour vérifier si le router est prêt
+  const [isClient, setIsClient] = useState(false); 
+  const [routerReady, setRouterReady] = useState(false); 
   const router = useRouter();
 
-  // Vérification si l'utilisateur est déjà connecté (seulement côté client)
   useEffect(() => {
-    setIsClient(true); // On marque qu'on est maintenant côté client
+    setIsClient(true);
     if (typeof window !== 'undefined') {
-      setRouterReady(true); // Nous marquons que le routeur est prêt après le rendu
+      setRouterReady(true);
     }
   }, []);
 
-  // Utilisation de useEffect pour rediriger l'utilisateur après le montage du composant
   useEffect(() => {
     if (routerReady) {
-      const token = localStorage.getItem('token'); // ou récupérer depuis un cookie
+      const token = localStorage.getItem('token'); 
       if (token) {
-        // Si l'utilisateur est connecté (token présent), redirige vers une autre page
-        router.push('/dashboard');  // Par exemple, rediriger vers un tableau de bord ou une autre page.
+        router.push('/dashboard');  
       }
     }
   }, [routerReady, router]);
@@ -86,7 +83,6 @@ export default function InscriptionPage() {
     }
   };
 
-  // Ne pas rendre le composant tant que nous ne sommes pas côté client et que le router est prêt
   if (!isClient || !routerReady) {
     return null;
   }
