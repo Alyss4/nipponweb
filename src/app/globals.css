@@ -24,6 +24,18 @@
     --foreground: #ededed;
   }
 }
+.grade-fields-container {
+  transition: opacity 0.3s ease-in-out, max-height 0.3s ease-in-out;
+  opacity: 0;
+  max-height: 0;
+  overflow: hidden;
+}
+
+.grade-fields-container.show {
+  opacity: 1;
+  max-height: 500px; 
+}
+
 
 html,
 body {

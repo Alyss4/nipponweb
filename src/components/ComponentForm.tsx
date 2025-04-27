@@ -1,7 +1,8 @@
 'use client';
 
 import React, { useState, ChangeEvent } from 'react';
-
+import { Checkbox as MantineCheckbox } from '@mantine/core';
+import { Radio as MantineRadio, type RadioIconProps } from '@mantine/core';
 interface InputProps {
   label: string;
   type: string;
@@ -43,22 +44,47 @@ interface CheckboxProps {
 
 const Checkbox: React.FC<CheckboxProps> = ({ label, checked, onChange }) => {
   return (
-    <div className="mb-3 form-check">
-      <input
-        type="checkbox"
-        className="form-check-input"
-        id={label}
+    <div className="mb-3">
+      <MantineCheckbox
+        label={label}
         checked={checked}
         onChange={onChange}
-        style={{
-          backgroundColor: 'var(--bg-secondary)',
-          borderColor: 'var(--text-primary)',
-          borderRadius: '5px',
+        size="md"
+        radius="md"
+        styles={{
+          input: {
+            backgroundColor: 'var(--bg-secondary)',
+            borderColor: 'var(--text-primary)',
+            borderWidth: '2px',
+            borderRadius: '8px',
+            width: '32px',
+            height: '32px',
+            '&:checked': {
+              backgroundColor: 'var(--bg-secondary)',
+              borderColor: 'var(--text-primary)',
+              color: 'var(--text-primary)', // pour bien afficher le "X"
+            },
+          },
+          label: {
+            color: 'var(--text-primary)',
+            fontWeight: 'bold',
+            marginLeft: '10px',
+          },
         }}
+        icon={({ indeterminate, className }) => (
+          <div
+            className={className}
+            style={{
+              fontSize: '18px',
+              fontWeight: 'bold',
+              lineHeight: 1,
+              textAlign: 'center',
+            }}
+          >
+            ✖
+          </div>
+        )}
       />
-      <label htmlFor={label} className="form-check-label text-dark fw-bold">
-        {label}
-      </label>
     </div>
   );
 };
@@ -72,23 +98,49 @@ interface RadioProps {
 
 const Radio: React.FC<RadioProps> = ({ label, name, checked, onChange }) => {
   return (
-    <div className="mb-3 form-check">
+    <div className="mb-3 d-flex align-items-center">
       <input
         type="radio"
-        className="form-check-input"
         id={label}
         name={name}
         checked={checked}
         onChange={onChange}
-        style={{
-          backgroundColor: 'var(--bg-secondary)',
-          borderColor: 'var(--text-primary)',
-          borderRadius: '5px',
-        }}
+        className="custom-radio"
       />
-      <label htmlFor={label} className="form-check-label text-dark fw-bold">
+      <label htmlFor={label} className="ms-2" style={{ fontWeight: 'bold', color: 'var(--text-primary)' }}>
         {label}
       </label>
+
+      <style jsx>{`
+        .custom-radio {
+          appearance: none;
+          -webkit-appearance: none;
+          -moz-appearance: none;
+          background-color: var(--bg-secondary);
+          border: 2px solid var(--text-primary);
+          width: 24px;
+          height: 24px;
+          border-radius: 50%;
+          position: relative;
+          transition: all 0.3s ease;
+        }
+
+        .custom-radio:checked {
+          background-color: var(--bg-secondary);
+          border-color: var(--text-primary);
+        }
+
+        .custom-radio:checked::after {
+          content: '';
+          position: absolute;
+          top: 4px;
+          left: 4px;
+          width: 12px;
+          height: 12px;
+          border-radius: 50%;
+          background-color: var(--bg-primary);
+        }
+      `}</style>
     </div>
   );
 };

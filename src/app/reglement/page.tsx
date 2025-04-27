@@ -58,7 +58,6 @@ export default function RèglementPage() {
         </tbody>
       </table>
 
-      {/* Bouton pour accepter le règlement à la fin */}
       <div className="text-center mt-4">
         <button
           className="btn btn-primary"

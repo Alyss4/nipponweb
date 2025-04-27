@@ -1,46 +1,64 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Input, ButtonPrimaryy } from '../../components/ComponentForm';
+import { Input, Checkbox, ButtonPrimaryy, Select } from '../../components/ComponentForm';
 
 export default function Categorie() {
   const [nom, setNom] = useState('');
   const [poidsMin, setPoidsMin] = useState('');
   const [poidsMax, setPoidsMax] = useState('');
-  const [age, setAge] = useState('');
+  const [ageMin, setAgeMin] = useState('');
+  const [ageMax, setAgeMax] = useState('');
+  const [gradeMin, setGradeMin] = useState('');
+  const [gradeMax, setGradeMax] = useState('');
+  const [gradeMinRequired, setGradeMinRequired] = useState(false);
+  const [gradeMaxRequired, setGradeMaxRequired] = useState(false);
   const [message, setMessage] = useState('');
   const [erreur, setErreur] = useState('');
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-
-    if (!nom || !poidsMin || !poidsMax || !age) {
-      setErreur("Tous les champs sont obligatoires.");
+    if (!nom || !poidsMin || !poidsMax || !ageMin || !ageMax) {
+      setErreur('Tous les champs sont obligatoires.');
       setMessage('');
       return;
     }
-
     if (parseFloat(poidsMin) > parseFloat(poidsMax)) {
-      setErreur("Le poids minimum ne peut pas être supérieur au poids maximum.");
+      setErreur('Le poids minimum ne peut pas être supérieur au poids maximum.');
       setMessage('');
       return;
     }
-
+    if ((gradeMinRequired && !gradeMin) || (gradeMaxRequired && !gradeMax)) {
+      setErreur('Veuillez remplir les grades minimum ou maximum si requis.');
+      setMessage('');
+      return;
+    }
+    if (parseFloat(gradeMin) > parseFloat(gradeMax)) {
+      setErreur('Le grade minimum ne peut pas être supérieur au grade maximum.');
+      setMessage('');
+      return;
+    }
     setErreur('');
-    setMessage("Catégorie créée avec succès ✅");
-
+    setMessage('Catégorie créée avec succès ✅');
     console.log({
       nom,
       poidsMin,
       poidsMax,
-      age
+      ageMin,
+      ageMax,
+      gradeMin,
+      gradeMax
     });
 
-    // Réinitialisation du formulaire
     setNom('');
     setPoidsMin('');
     setPoidsMax('');
-    setAge('');
+    setAgeMin('');
+    setAgeMax('');
+    setGradeMin('');
+    setGradeMax('');
+    setGradeMinRequired(false);
+    setGradeMaxRequired(false);
   };
 
   return (
@@ -71,14 +89,74 @@ export default function Categorie() {
           onChange={(e) => setPoidsMax(e.target.value)}
           required
         />
-        <Input
-          label="Tranche d'âge"
-          type="text"
-          placeholder="Ex: 18-21 ans"
-          value={age}
-          onChange={(e) => setAge(e.target.value)}
-          required
+        
+        <div className="mb-3">
+          <label htmlFor="ageMin" className="form-label text-dark fw-bold">Tranche d'âge</label>
+          <div className="d-flex justify-content-between">
+            <input
+              type="number"
+              className="form-control"
+              id="ageMin"
+              placeholder="Ex: 18"
+              value={ageMin}
+              onChange={(e) => setAgeMin(e.target.value)}
+              required
+              style={{
+                backgroundColor: 'var(--bg-secondary)',
+                borderColor: 'var(--text-primary)',
+                borderRadius: '5px',
+              }}
+            />
+            <span>-</span>
+            <input
+              type="number"
+              className="form-control"
+              id="ageMax"
+              placeholder="Ex: 21"
+              value={ageMax}
+              onChange={(e) => setAgeMax(e.target.value)}
+              required
+              style={{
+                backgroundColor: 'var(--bg-secondary)',
+                borderColor: 'var(--text-primary)',
+                borderRadius: '5px',
+              }}
+            />
+          </div>
+        </div>
+
+        <Checkbox
+          label="Le grade minimum est requis"
+          checked={gradeMinRequired}
+          onChange={(e) => setGradeMinRequired(e.target.checked)}
         />
+        <Checkbox
+          label="Le grade maximum est requis"
+          checked={gradeMaxRequired}
+          onChange={(e) => setGradeMaxRequired(e.target.checked)}
+        />
+
+        {gradeMinRequired && (
+          <div className="mb-3 grade-fields-container show">
+            <Select
+              label="Grade minimum"
+              value={gradeMin}
+              onChange={(e) => setGradeMin(e.target.value)}
+              options={['1', '2', '3', '4', '5', '6', '7', '8', '9', '10']}
+            />
+          </div>
+        )}
+
+        {gradeMaxRequired && (
+          <div className="mb-3 grade-fields-container show">
+            <Select
+              label="Grade maximum"
+              value={gradeMax}
+              onChange={(e) => setGradeMax(e.target.value)}
+              options={['1', '2', '3', '4', '5', '6', '7', '8', '9', '10']}
+            />
+          </div>
+        )}
 
         {erreur && <p className="text-danger">{erreur}</p>}
         {message && <p className="text-success">{message}</p>}

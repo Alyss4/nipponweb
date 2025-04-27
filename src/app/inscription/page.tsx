@@ -65,7 +65,7 @@ export default function InscriptionPage() {
     
       if (response.ok) {
         if (result.token) {
-          localStorage.setItem('token', result.token); // ✅ ENREGISTRE LE TOKEN !
+          localStorage.setItem('token', result.token);
           setMessage('Inscription réussie !');
           setErreur('');
         }

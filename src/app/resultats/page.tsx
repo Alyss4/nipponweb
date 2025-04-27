@@ -4,22 +4,22 @@ import React, { useState } from 'react';
 
 interface Resultat {
   club: string;
-  paysClub: string; // Pays du club
+  paysClub: string; 
   tournoi: string;
-  lieu: string; // Lieu du tournoi
-  date: string;  // Date du tournoi
+  lieu: string; 
+  date: string;  
   competiteurs: Competiteur[];
-  vainqueur: string; // Nom du vainqueur
-  scoreVainqueur: string; // Score du vainqueur
-  finaliste: string; // Nom du finaliste
-  scoreFinaliste: string; // Score du finaliste
+  vainqueur: string; 
+  scoreVainqueur: string; 
+  finaliste: string; 
+  scoreFinaliste: string; 
 }
 
 interface Competiteur {
   nom: string;
   position: number;
-  pays: string; // Pays du compétiteur
-  score: string; // Score du compétiteur
+  pays: string; 
+  score: string; 
 }
 
 export default function ResultatPage() {
@@ -87,14 +87,11 @@ export default function ResultatPage() {
             <strong>Date :</strong> {resultat.date}
           </p>
 
-          {/* Résultats des Finalistes */}
           <h4 className="text-primary">Finalistes</h4>
           <div className="mb-3 text-primary">
             <p><strong>Vainqueur : </strong>{resultat.vainqueur} <strong>(Score : </strong>{resultat.scoreVainqueur}<strong>)</strong></p>
             <p><strong>Finaliste : </strong>{resultat.finaliste} <strong>(Score : </strong>{resultat.scoreFinaliste}<strong>)</strong></p>
           </div>
-
-          {/* Tableau des compétiteurs */}
           <table className="table table-striped table-hover" style={{ borderRadius: '10px' }}>
             <thead className="table-light">
               <tr>

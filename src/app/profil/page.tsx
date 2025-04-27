@@ -89,13 +89,6 @@ export default function ProfilPage() {
           onChange={(e) => setEmail(e.target.value)}
           required={true}
         />
-        <Input
-          label="Nouveau mot de passe"
-          type="password"
-          placeholder="Laisser vide pour ne pas changer"
-          value={motDePasse}
-          onChange={(e) => setMotDePasse(e.target.value)}
-        />
 
         {message && <p className="text-success">{message}</p>}
         {erreur && <p className="text-danger">{erreur}</p>}

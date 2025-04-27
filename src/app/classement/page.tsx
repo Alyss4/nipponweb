@@ -5,15 +5,15 @@ import React, { useState } from 'react';
 interface Competiteur {
   nom: string;
   position: number;
-  pays: string; // Ajout du pays du compétiteur
+  pays: string;
 }
 
 interface Classement {
   club: string;
-  paysClub: string; // Ajout du pays du club
+  paysClub: string;
   tournoi: string;
-  lieu: string; // Lieu du tournoi
-  date: string;  // Date du tournoi
+  lieu: string; 
+  date: string;  
   competiteurs: Competiteur[];
 }
 

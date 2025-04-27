@@ -27,7 +27,6 @@ export default function ContactPage() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // Logique d'envoi (par exemple, envoyer à un serveur)
     setConfirmation('Votre message a été envoyé avec succès !');
     setFormData({ nom: '', email: '', message: '' });
   };

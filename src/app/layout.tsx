@@ -1,4 +1,4 @@
-'use client'; 
+'use client';
 
 import Head from 'next/head';
 import 'bootstrap/dist/css/bootstrap.min.css';
@@ -7,6 +7,7 @@ import './globals.css';
 import Link from 'next/link';
 import UserSidebarInfo from '../components/UserSidebarInfo';
 import { useState, useEffect } from 'react';
+import { MantineProvider } from '@mantine/core';
 
 export default function RootLayout({
   children,
@@ -22,6 +23,7 @@ export default function RootLayout({
 
   return (
     <html lang="fr">
+       <MantineProvider>
       <Head>
         <title>Tournois App</title>
         <meta name="description" content="Gérez vos tournois facilement" />
@@ -94,7 +96,9 @@ export default function RootLayout({
           </div>
           {children}
         </main>
+        
       </body>
+      </MantineProvider>
     </html>
   );
 }

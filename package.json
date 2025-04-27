@@ -9,6 +9,8 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@mantine/core": "^7.17.5",
+    "@mantine/hooks": "^7.17.5",
     "@nivo/bar": "^0.88.0",
     "@nivo/core": "^0.88.0",
     "bootstrap": "^5.3.5",
