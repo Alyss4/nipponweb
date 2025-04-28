@@ -44,47 +44,44 @@ interface CheckboxProps {
 
 const Checkbox: React.FC<CheckboxProps> = ({ label, checked, onChange }) => {
   return (
-    <div className="mb-3">
-      <MantineCheckbox
-        label={label}
-        checked={checked}
-        onChange={onChange}
-        size="md"
-        radius="md"
-        styles={{
-          input: {
-            backgroundColor: 'var(--bg-secondary)',
-            borderColor: 'var(--text-primary)',
-            borderWidth: '2px',
-            borderRadius: '8px',
-            width: '32px',
-            height: '32px',
-            '&:checked': {
-              backgroundColor: 'var(--bg-secondary)',
-              borderColor: 'var(--text-primary)',
-              color: 'var(--text-primary)', 
-            },
-          },
-          label: {
-            color: 'var(--text-primary)',
-            fontWeight: 'bold',
-            marginLeft: '10px',
-          },
-        }}
-        icon={({ indeterminate, className }) => (
-          <div
-            className={className}
+    <div className="mb-3 d-flex align-items-center">
+      <label className="d-flex align-items-center" style={{ cursor: 'pointer', position: 'relative' }}>
+        <div style={{ position: 'relative', width: '32px', height: '32px', marginRight: '10px' }}>
+          <input
+            type="checkbox"
+            checked={checked}
+            onChange={onChange}
             style={{
-              fontSize: '18px',
-              fontWeight: 'bold',
-              lineHeight: 1,
-              textAlign: 'center',
+              appearance: 'none',
+              WebkitAppearance: 'none',
+              MozAppearance: 'none',
+              width: '32px',
+              height: '32px',
+              border: '2px solid var(--text-primary)',
+              borderRadius: '8px',
+              backgroundColor: 'var(--bg-secondary)',
+              cursor: 'pointer',
             }}
-          >
-            ✖
-          </div>
-        )}
-      />
+          />
+          {checked && (
+            <span
+              style={{
+                position: 'absolute',
+                top: '50%',
+                left: '50%',
+                transform: 'translate(-50%, -50%)',
+                color: 'var(--text-primary)',
+                fontSize: '18px',
+                fontWeight: 'bold',
+                pointerEvents: 'none',
+              }}
+            >
+              ✖
+            </span>
+          )}
+        </div>
+        <span style={{ color: 'var(--text-primary)', fontWeight: 'bold' }}>{label}</span>
+      </label>
     </div>
   );
 };
