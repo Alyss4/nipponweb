@@ -7,6 +7,8 @@ import { useRouter } from 'next/navigation';
 export default function ConnexionPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const router = useRouter();
 
   const handleEmailChange = (event: ChangeEvent<HTMLInputElement>) => {
@@ -19,6 +21,8 @@ export default function ConnexionPage() {
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
+    setError(null);
+    setLoading(true);
 
     try {
       const response = await fetch('http://127.0.0.1:8000/api/connexion', {
@@ -34,32 +38,29 @@ export default function ConnexionPage() {
 
       const data = await response.json();
 
+      setLoading(false);
+
       if (!response.ok) {
-        console.error('Erreur de connexion :', data.message || 'Erreur inconnue');
-        alert(data.message || 'Erreur lors de la connexion');
+        setError(data.message || 'Erreur lors de la connexion');
         return;
       }
-
 
       localStorage.setItem('token', data.token);
       localStorage.setItem('role', data.utilisateur.role);
 
-      alert('Connexion réussie !');
-      console.log('Utilisateur connecté:', data.utilisateur);
-
       const role = data.utilisateur.role;
 
       if (role === 'admin') {
-        router.push('./');
+        router.push('/admin/dashboard');
       } else if (role === 'user') {
-        router.push('./');
+        router.push('/user/dashboard');
       } else {
         router.push('/');
       }
 
     } catch (error) {
-      console.error('Erreur réseau ou serveur :', error);
-      alert('Impossible de se connecter à l’API');
+      setLoading(false);
+      setError('Impossible de se connecter à l’API');
     }
   };
 
@@ -98,6 +99,8 @@ export default function ConnexionPage() {
           </div>
         </div>
       </form>
+      {error && <p className="text-danger">{error}</p>}
+      {loading && <p>Chargement...</p>}
     </div>
   );
 }

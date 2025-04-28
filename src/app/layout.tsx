@@ -7,7 +7,10 @@ import './globals.css';
 import Link from 'next/link';
 import UserSidebarInfo from '../components/UserSidebarInfo';
 import { useState, useEffect } from 'react';
-import { MantineProvider } from '@mantine/core';
+import VisitorSidebarLinks from '../components/componentsSidebar/VisitorSidebarLinks';
+import CompetitorSidebarLinks from '@/components/componentsSidebar/CompetitorSidebarLinks';
+import ManagerSidebarLinks from '@/components/componentsSidebar/ManagerSidebarLinks';
+import AdministratorSidebarLinks from '@/components/componentsSidebar/AdministratorSidebarLinks';
 
 export default function RootLayout({
   children,
@@ -15,11 +18,32 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [role, setRole] = useState<string | null>(null);
 
   useEffect(() => {
     const token = localStorage.getItem('token');
+    const storedRole = localStorage.getItem('role');
     setIsAuthenticated(!!token);
+    setRole(storedRole);
   }, []);
+
+  const renderSidebarLinks = () => {
+    if (!isAuthenticated) {
+      return <VisitorSidebarLinks />;
+    }
+
+    switch (role) {
+      case 'c': // Compétiteur
+        return <CompetitorSidebarLinks />;
+      case 'g': // gestionnaire
+        return <ManagerSidebarLinks />;
+      case 'a': // Administrateur
+        return <AdministratorSidebarLinks />;
+      case 'u': // Utilisateur (même droit que visiteur)
+      default:
+        return <VisitorSidebarLinks />;
+    }
+  };
 
   return (
     <html lang="fr">
@@ -32,70 +56,48 @@ export default function RootLayout({
           <h2 className="text-danger fs-5 mb-3">//NOM//</h2>
           <hr className="border-light w-100" />
           <div className="flex-grow-1">
-            <h6 className="text-warning">Les Tournois</h6>
-            <ul className="list-unstyled">
-              <li><a href="#" className="text-light text-decoration-none">Prochains</a></li>
-              <li><a href="/resultats" className="text-light text-decoration-none">Résultats</a></li>
-              <li><a href="/classement" className="text-light text-decoration-none">Classement</a></li>
-            </ul>
-            <h6 className="text-warning mt-3">Infos</h6>
-            <ul className="list-unstyled">
-              <li><a href="/annonces" className="text-light text-decoration-none">Annonces</a></li>
-            </ul>
-            <h6 className="text-warning mt-3">Contact</h6>
-            <ul className="list-unstyled">
-              <li><a href="/apropos" className="text-light text-decoration-none">À propos</a></li>
-            </ul>
+            {renderSidebarLinks()}
             <h6 className="text-warning mt-3">Test</h6>
             <ul className="list-unstyled">
-              <li><a href="/roles" className="text-light text-decoration-none">Roles</a></li>
-              <li><a href="/changemdp" className="text-light text-decoration-none">changemdp</a></li>
-              <li><a href="/tournois" className="text-light text-decoration-none">tournois</a></li>
-              <li><a href="/categorie" className="text-light text-decoration-none">categorie</a></li>
-              <li><a href="/combat" className="text-light text-decoration-none">combat</a></li>
-              <li><a href="/reglement" className="text-light text-decoration-none">Règlement</a></li>
-              <li><a href="/contact" className="text-light text-decoration-none">Contact</a></li>
-              <li><a href="/classement" className="text-light text-decoration-none">Classement</a></li>
-              <li><a href="/resultats" className="text-light text-decoration-none">Résultats</a></li>
+              <li><Link href="/roles" className="text-light text-decoration-none">Roles</Link></li>
             </ul>
           </div>
         </aside>
-
+        
         <main className="flex-grow-1 p-4" style={{ backgroundColor: 'var(--bg-secondary)' }}>
           <div className="d-flex justify-content-end mb-3">
             <UserSidebarInfo />
             {!isAuthenticated && (
-              <Link href="/inscription">
-                <button
-                  className="btn"
-                  style={{
-                    backgroundColor: 'var(--bg-button-primary)',
-                    color: 'var(--text-button-primary)',
-                    borderColor: 'var(--border-button-primary)',
-                  }}
-                >
-                  Inscription
-                </button>
-              </Link>
-            )}
-            {!isAuthenticated && (
-              <Link href="/connexion">
-                <button
-                  className="btn"
-                  style={{
-                    backgroundColor: 'var(--bg-button-secondary)',
-                    color: 'var(--text-button-secondary)',
-                    borderColor: 'var(--border-button-secondary)',
-                  }}
-                >
-                  Se connecter
-                </button>
-              </Link>
+              <>
+                <Link href="/inscription">
+                  <button
+                    className="btn"
+                    style={{
+                      backgroundColor: 'var(--bg-button-primary)',
+                      color: 'var(--text-button-primary)',
+                      borderColor: 'var(--border-button-primary)',
+                    }}
+                  >
+                    Inscription
+                  </button>
+                </Link>
+                <Link href="/connexion">
+                  <button
+                    className="btn"
+                    style={{
+                      backgroundColor: 'var(--bg-button-secondary)',
+                      color: 'var(--text-button-secondary)',
+                      borderColor: 'var(--border-button-secondary)',
+                    }}
+                  >
+                    Se connecter
+                  </button>
+                </Link>
+              </>
             )}
           </div>
           {children}
         </main>
-        
       </body>
     </html>
   );
