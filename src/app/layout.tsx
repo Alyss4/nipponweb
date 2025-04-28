@@ -23,7 +23,6 @@ export default function RootLayout({
 
   return (
     <html lang="fr">
-       <MantineProvider>
       <Head>
         <title>Tournois App</title>
         <meta name="description" content="Gérez vos tournois facilement" />
@@ -98,7 +97,6 @@ export default function RootLayout({
         </main>
         
       </body>
-      </MantineProvider>
     </html>
   );
 }

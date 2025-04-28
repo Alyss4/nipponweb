@@ -62,7 +62,7 @@ const Checkbox: React.FC<CheckboxProps> = ({ label, checked, onChange }) => {
             '&:checked': {
               backgroundColor: 'var(--bg-secondary)',
               borderColor: 'var(--text-primary)',
-              color: 'var(--text-primary)', // pour bien afficher le "X"
+              color: 'var(--text-primary)', 
             },
           },
           label: {

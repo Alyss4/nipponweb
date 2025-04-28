@@ -1,12 +1,23 @@
-'use client';
+import { 
+  ButtonImportParticipants, ButtonCreateTournament, ButtonGuideUser, 
+  ButtonMyProfile, ButtonViewMyTournaments, ButtonConsultResults, 
+  ButtonManageUsers, ButtonValidateCategories, ButtonStyles 
+} from '../components/componentsPages/AccueilButton'; 
 
-import { motion } from 'framer-motion';
-import { ResponsiveBar } from '@nivo/bar';
-
-export default function HomePage() {
+export default function Dashboard() {
   return (
-    <div className="mt-5">
-     
-    </div>
+    <>
+      <ButtonStyles />
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '24px', justifyContent: 'center' }}>
+        <ButtonImportParticipants />
+        <ButtonCreateTournament />
+        <ButtonGuideUser />
+        <ButtonMyProfile />
+        <ButtonViewMyTournaments />
+        <ButtonConsultResults />
+        <ButtonManageUsers />
+        <ButtonValidateCategories />
+      </div>
+    </>
   );
 }
