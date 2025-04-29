@@ -7,6 +7,7 @@ import './globals.css';
 import Link from 'next/link';
 import UserSidebarInfo from '../components/UserSidebarInfo';
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation'; 
 import VisitorSidebarLinks from '../components/componentsSidebar/VisitorSidebarLinks';
 import CompetitorSidebarLinks from '@/components/componentsSidebar/CompetitorSidebarLinks';
 import ManagerSidebarLinks from '@/components/componentsSidebar/ManagerSidebarLinks';
@@ -19,6 +20,7 @@ export default function RootLayout({
 }) {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [role, setRole] = useState<string | null>(null);
+  const router = useRouter();
 
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -26,6 +28,14 @@ export default function RootLayout({
     setIsAuthenticated(!!token);
     setRole(storedRole);
   }, []);
+
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('role');
+    setIsAuthenticated(false);
+    setRole(null);
+    router.push('/');
+  };
 
   const renderSidebarLinks = () => {
     if (!isAuthenticated) {
@@ -52,9 +62,8 @@ export default function RootLayout({
         <meta name="description" content="Gérez vos tournois facilement" />
       </Head>
       <body className="d-flex" style={{ fontFamily: 'Luciole, sans-serif', minHeight: '100vh' }}>
-        <aside className="text-light p-3 d-flex flex-column" style={{ width: '14%', backgroundColor: 'var(--bg-primary)', minHeight: '100vh' }}>
-          <h2 className="text-danger fs-5 mb-3">//NOM//</h2>
-          <hr className="border-light w-100" />
+        <aside className="text-light p-3 d-flex flex-column" style={{ width: '13%', backgroundColor: 'var(--bg-primary)', minHeight: '100vh' }}>
+          <img src="./icon.png" alt="Logo Nippon Kempo" className="mx-auto d-block" style={{ width: '80%' }} />
           <div className="flex-grow-1">
             {renderSidebarLinks()}
             <h6 className="text-warning mt-3">Test</h6>
@@ -63,11 +72,11 @@ export default function RootLayout({
             </ul>
           </div>
         </aside>
-        
+
         <main className="flex-grow-1 p-4" style={{ backgroundColor: 'var(--bg-secondary)' }}>
           <div className="d-flex justify-content-end mb-3">
             <UserSidebarInfo />
-            {!isAuthenticated && (
+            {!isAuthenticated ? (
               <>
                 <Link href="/inscription">
                   <button
@@ -94,6 +103,18 @@ export default function RootLayout({
                   </button>
                 </Link>
               </>
+            ) : (
+              <button
+                onClick={handleLogout}
+                className="btn"
+                style={{
+                  backgroundColor: 'var(--bg-button-secondary)',
+                  color: 'var(--text-button-secondary)',
+                  borderColor: 'var(--border-button-secondary)',
+                }}
+              >
+                Déconnexion
+              </button>
             )}
           </div>
           {children}
