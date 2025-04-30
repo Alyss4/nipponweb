@@ -1,10 +1,11 @@
 'use client';
 
-import React, { useState, ChangeEvent } from 'react';
+import React, { useState } from 'react';
 
 interface Utilisateur {
   email: string;
-  role: 'normal' | 'gestionnaire' | 'admin';
+  role: 'visiteur' | 'competiteur' | 'gestionnaire' | 'admin';
+  is_active: boolean;
 }
 
 export default function RolePage() {
@@ -12,25 +13,46 @@ export default function RolePage() {
   const [resultats, setResultats] = useState<Utilisateur[]>([]);
   const [message, setMessage] = useState('');
 
-  const utilisateursFictifs: Utilisateur[] = [
-    { email: 'alice@example.com', role: 'normal' },
-    { email: 'bob@example.com', role: 'gestionnaire' },
-    { email: 'carol@example.com', role: 'admin' },
-  ];
-
-  const handleRecherche = () => {
-    const filtres = utilisateursFictifs.filter((u) =>
-      u.email.toLowerCase().includes(emailRecherche.toLowerCase())
-    );
-    setResultats(filtres);
+  const handleRecherche = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`http://localhost:8000/api/utilisateurs/search?email=${emailRecherche}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      const data = await response.json();
+      setResultats(data);
+    } catch {
+      setMessage('Erreur lors de la recherche');
+    }
   };
 
-  const handleChangeRole = (email: string, nouveauRole: 'normal' | 'gestionnaire' | 'admin') => {
-    const miseAJour = resultats.map((u) =>
-      u.email === email ? { ...u, role: nouveauRole } : u
-    );
-    setResultats(miseAJour);
-    setMessage(`Rôle de ${email} mis à jour en "${nouveauRole}"`);
+  const handleChangeRole = async (email: string, nouveauRole: Utilisateur['role']) => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`http://localhost:8000/api/utilisateurs/${email}/role`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ role: nouveauRole }),
+      });
+
+      if (response.ok) {
+        const miseAJour = resultats.map((u) =>
+          u.email === email ? { ...u, role: nouveauRole } : u
+        );
+        setResultats(miseAJour);
+        setMessage(`Rôle de ${email} mis à jour en "${nouveauRole}"`);
+      } else {
+        const erreur = await response.json();
+        setMessage(`Erreur : ${erreur.message || 'Échec de la mise à jour'}`);
+      }
+    } catch {
+      setMessage('Erreur lors du changement de rôle');
+    }
   };
 
   return (
@@ -82,7 +104,7 @@ export default function RolePage() {
                 <td>{utilisateur.email}</td>
                 <td className="text-center">
                   <div className="btn-group" role="group">
-                    {['normal', 'gestionnaire', 'admin'].map((role) => (
+                    {['visiteur', 'competiteur', 'gestionnaire', 'admin'].map((role) => (
                       <button
                         key={role}
                         className={`btn btn-sm ${

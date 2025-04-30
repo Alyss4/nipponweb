@@ -146,10 +146,13 @@ interface SelectProps {
   label: string;
   value: string;
   onChange: (event: ChangeEvent<HTMLSelectElement>) => void;
-  options: string[];
+  options: { value: string; label: string }[]; 
+  withCustomOption?: boolean;
+  onCustomOptionChange?: (event: ChangeEvent<HTMLInputElement>) => void;
 }
 
-const Select: React.FC<SelectProps> = ({ label, value, onChange, options }) => {
+
+const Select: React.FC<SelectProps> = ({ label, value, onChange, options, withCustomOption, onCustomOptionChange }) => {
   return (
     <div className="mb-3">
       <label htmlFor={label} className="form-label text-dark fw-bold">
@@ -167,14 +170,29 @@ const Select: React.FC<SelectProps> = ({ label, value, onChange, options }) => {
         }}
       >
         {options.map((option, index) => (
-          <option key={index} value={option}>
-            {option}
+          <option key={index} value={option.value}>
+            {option.label}
           </option>
         ))}
+        {withCustomOption && <option value="autre">Autre</option>}
       </select>
+      {withCustomOption && value === 'autre' && (
+        <input
+          type="text"
+          className="form-control mt-2"
+          placeholder="Entrez votre option personnalisée"
+          onChange={onCustomOptionChange}
+          style={{
+            backgroundColor: 'var(--bg-secondary)',
+            borderColor: 'var(--text-primary)',
+            borderRadius: '5px',
+          }}
+        />
+      )}
     </div>
   );
 };
+
 
 const ButtonPrimaryy: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [buttonColor, setButtonColor] = useState('var(--bg-button-primary)');

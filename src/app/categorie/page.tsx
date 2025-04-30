@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Input, Checkbox, ButtonPrimaryy, Select } from '../../components/ComponentForm';
 
 export default function Categorie() {
@@ -13,11 +13,33 @@ export default function Categorie() {
   const [gradeMax, setGradeMax] = useState('');
   const [gradeMinRequired, setGradeMinRequired] = useState(false);
   const [gradeMaxRequired, setGradeMaxRequired] = useState(false);
+  const [sexe, setSexe] = useState('M');
+  const [grades, setGrades] = useState([]); 
   const [message, setMessage] = useState('');
   const [erreur, setErreur] = useState('');
 
-  const handleSubmit = (e: React.FormEvent) => {
+  useEffect(() => {
+    const fetchGrades = async () => {
+      try {
+        const response = await fetch('http://localhost:8000/api/grades', {
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('token')}`,
+          },
+        });
+        const result = await response.json();
+        setGrades(result);
+      } catch (error) {
+        console.error('Erreur lors du chargement des grades:', error);
+      }
+    };
+
+    fetchGrades();
+  }, []);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
     if (!nom || !poidsMin || !poidsMax || !ageMin || !ageMax) {
       setErreur('Tous les champs sont obligatoires.');
       setMessage('');
@@ -33,32 +55,60 @@ export default function Categorie() {
       setMessage('');
       return;
     }
-    if (parseFloat(gradeMin) > parseFloat(gradeMax)) {
+    if (gradeMinRequired && gradeMaxRequired && parseFloat(gradeMin) > parseFloat(gradeMax)) {
       setErreur('Le grade minimum ne peut pas être supérieur au grade maximum.');
       setMessage('');
       return;
     }
-    setErreur('');
-    setMessage('Catégorie créée avec succès ✅');
-    console.log({
-      nom,
-      poidsMin,
-      poidsMax,
-      ageMin,
-      ageMax,
-      gradeMin,
-      gradeMax
-    });
 
-    setNom('');
-    setPoidsMin('');
-    setPoidsMax('');
-    setAgeMin('');
-    setAgeMax('');
-    setGradeMin('');
-    setGradeMax('');
-    setGradeMinRequired(false);
-    setGradeMaxRequired(false);
+    const data = {
+      nom,
+      sexe,
+      poidsMin: parseFloat(poidsMin),
+      poidsMax: parseFloat(poidsMax),
+      ageMin: parseInt(ageMin),
+      ageMax: parseInt(ageMax),
+      gradeMin: gradeMinRequired ? parseInt(gradeMin) : 0,
+      gradeMax: gradeMaxRequired ? parseInt(gradeMax) : 0,
+    };
+    console.log(data);
+    try {
+      const token = localStorage.getItem('token');
+
+      const response = await fetch('http://localhost:8000/api/categories', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify(data),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        setErreur(result.message || 'Une erreur est survenue.');
+        setMessage('');
+        return;
+      }
+
+      setMessage('Catégorie créée avec succès ✅');
+      setErreur('');
+
+      setNom('');
+      setPoidsMin('');
+      setPoidsMax('');
+      setAgeMin('');
+      setAgeMax('');
+      setGradeMin('');
+      setGradeMax('');
+      setGradeMinRequired(false);
+      setGradeMaxRequired(false);
+      setSexe('');
+    } catch (error) {
+      setErreur('Erreur réseau ou serveur.');
+      setMessage('');
+    }
   };
 
   return (
@@ -89,7 +139,7 @@ export default function Categorie() {
           onChange={(e) => setPoidsMax(e.target.value)}
           required
         />
-        
+
         <div className="mb-3">
           <label htmlFor="ageMin" className="form-label text-dark fw-bold">Tranche d'âge</label>
           <div className="d-flex justify-content-between">
@@ -125,6 +175,18 @@ export default function Categorie() {
           </div>
         </div>
 
+        <div className="mb-3">
+          <Select
+            label="Sexe"
+            value={sexe}
+            onChange={(e) => setSexe(e.target.value)}
+            options={[
+              { value: 'M', label: 'Masculin' },
+              { value: 'F', label: 'Féminin' },
+            ]}
+          />
+        </div>
+
         <Checkbox
           label="Le grade minimum est requis"
           checked={gradeMinRequired}
@@ -142,7 +204,7 @@ export default function Categorie() {
               label="Grade minimum"
               value={gradeMin}
               onChange={(e) => setGradeMin(e.target.value)}
-              options={['1', '2', '3', '4', '5', '6', '7', '8', '9', '10']}
+              options={grades.map(grade => ({ value: grade.id, label: grade.nom }))}
             />
           </div>
         )}
@@ -153,7 +215,7 @@ export default function Categorie() {
               label="Grade maximum"
               value={gradeMax}
               onChange={(e) => setGradeMax(e.target.value)}
-              options={['1', '2', '3', '4', '5', '6', '7', '8', '9', '10']}
+              options={grades.map(grade => ({ value: grade.id, label: grade.nom }))}
             />
           </div>
         )}
