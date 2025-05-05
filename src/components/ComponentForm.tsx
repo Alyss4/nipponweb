@@ -10,9 +10,10 @@ interface InputProps {
   value: string;
   onChange: (event: ChangeEvent<HTMLInputElement>) => void;
   required?: boolean;
+  accept?: string; 
 }
 
-const Input: React.FC<InputProps> = ({ label, type, placeholder, value, onChange, required }) => {
+const Input: React.FC<InputProps> = ({ label, type, placeholder, value, onChange, required, accept, ...props }) => {
   return (
     <div className="mb-3">
       <label htmlFor={label} className="form-label text-dark fw-bold">
@@ -26,6 +27,7 @@ const Input: React.FC<InputProps> = ({ label, type, placeholder, value, onChange
         value={value}
         onChange={onChange}
         required={required}
+        {...props}
         style={{
           backgroundColor: 'var(--bg-secondary)',
           borderColor: 'var(--text-primary)', 
@@ -42,7 +44,7 @@ interface CheckboxProps {
   onChange: (event: ChangeEvent<HTMLInputElement>) => void;
 }
 
-const Checkbox: React.FC<CheckboxProps> = ({ label, checked, onChange }) => {
+const Checkbox: React.FC<CheckboxProps> = ({ label, checked, onChange, ...props }) => {
   return (
     <div className="mb-3 d-flex align-items-center">
       <label className="d-flex align-items-center" style={{ cursor: 'pointer', position: 'relative' }}>
@@ -51,6 +53,7 @@ const Checkbox: React.FC<CheckboxProps> = ({ label, checked, onChange }) => {
             type="checkbox"
             checked={checked}
             onChange={onChange}
+            {...props}
             style={{
               appearance: 'none',
               WebkitAppearance: 'none',
@@ -93,7 +96,7 @@ interface RadioProps {
   onChange: (event: ChangeEvent<HTMLInputElement>) => void;
 }
 
-const Radio: React.FC<RadioProps> = ({ label, name, checked, onChange }) => {
+const Radio: React.FC<RadioProps> = ({ label, name, checked, onChange, ...props }) => {
   return (
     <div className="mb-3 d-flex align-items-center">
       <input
@@ -102,6 +105,7 @@ const Radio: React.FC<RadioProps> = ({ label, name, checked, onChange }) => {
         name={name}
         checked={checked}
         onChange={onChange}
+        {...props}
         className="custom-radio"
       />
       <label htmlFor={label} className="ms-2" style={{ fontWeight: 'bold', color: 'var(--text-primary)' }}>
@@ -152,7 +156,7 @@ interface SelectProps {
 }
 
 
-const Select: React.FC<SelectProps> = ({ label, value, onChange, options, withCustomOption, onCustomOptionChange }) => {
+const Select: React.FC<SelectProps> = ({ label, value, onChange, options, withCustomOption, onCustomOptionChange, ...props }) => {
   return (
     <div className="mb-3">
       <label htmlFor={label} className="form-label text-dark fw-bold">
@@ -163,6 +167,7 @@ const Select: React.FC<SelectProps> = ({ label, value, onChange, options, withCu
         id={label}
         value={value}
         onChange={onChange}
+        {...props}
         style={{
           backgroundColor: 'var(--bg-secondary)',
           borderColor: 'var(--text-primary)', 
@@ -194,11 +199,12 @@ const Select: React.FC<SelectProps> = ({ label, value, onChange, options, withCu
 };
 
 
-const ButtonPrimaryy: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+const ButtonPrimaryy: React.FC<React.ButtonHTMLAttributes<HTMLButtonElement>> = ({ children, ...props }) => {
   const [buttonColor, setButtonColor] = useState('var(--bg-button-primary)');
 
   return (
     <button
+      {...props}
       className="btn w-100"
       style={{
         backgroundColor: buttonColor,
@@ -207,12 +213,12 @@ const ButtonPrimaryy: React.FC<{ children: React.ReactNode }> = ({ children }) =
       }}
       onMouseOver={() => setButtonColor('var(--bg-button-primary-hover)')}
       onMouseOut={() => setButtonColor('var(--bg-button-primary)')}
-      type="submit"
     >
       {children}
     </button>
   );
 };
+
 
 const ButtonSecondaryy: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [buttonColor, setButtonColor] = useState('var(--bg-button-secondary)');

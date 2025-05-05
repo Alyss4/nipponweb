@@ -1,173 +1,241 @@
-import React, { useState, FormEvent } from 'react';
-import { Input, Select, Radio, ButtonPrimaryy } from '../ComponentForm';
-import Link from 'next/link';
+import React, { useState, useEffect, ChangeEvent } from 'react';
+import Row from '../Row';
+import Col from '../Col';
+import GestionParticipants from '../componentsPages/GestionParticipantsForm';
+import { Input, Select, Radio, ButtonPrimaryy, Checkbox } from '../ComponentForm';
+
+type Categorie = {
+  id: number;
+  nom: string;
+  sexe: string;
+  id_grade_max: number;
+  id_grade_min: number;
+};
 
 const TournoiSurPlaceForm: React.FC = () => {
-  const [nom, setNom] = useState('');
-  const [grade, setGrade] = useState('');
-  const [date, setDate] = useState('');
-  const [importType, setImportType] = useState('Manuellement');
-  const [genre, setGenre] = useState('');
-  const [systeme, setSysteme] = useState('');
-  const [message, setMessage] = useState('');
-  const [participantsLimit, setParticipantsLimit] = useState('');
-  const [sponsor, setSponsor] = useState('');
-  const [csvFile, setCsvFile] = useState<File | null>(null);
+  const [formData, setFormData] = useState({
+    nom: '',
+    gradeMin: '',
+    gradeMax: '',
+    date: '',
+    importType: 'Manuellement',
+    genre: '',
+    systeme: '',
+    participantsLimit: '',
+    sponsor: '',
+    csvFile: null,
+    selectedCategorieId: '',
+    id_grade_max: null as number | null,
+    id_grade_min: null as number | null,
+  });
 
-  const handleSubmit = (e: FormEvent) => {
-    e.preventDefault();
+  const [categories, setCategories] = useState<Categorie[]>([]);
+  const [grades, setGrades] = useState<{ id: number; nom: string }[]>([]);
+  const [showGestionParticipants, setShowGestionParticipants] = useState(false);
+  const [showSponsor, setShowSponsor] = useState(false);
+  const [showLimit, setShowLimit] = useState(false);
 
-    if (importType === 'CSV' && csvFile) {
-      const reader = new FileReader();
-      reader.onload = () => {
-        const csvContent = reader.result as string;
-        console.log('CSV Content:', csvContent);
-      };
-      reader.readAsText(csvFile);
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const response = await fetch('http://localhost:8000/api/categories/has/utilisateur', {
+          headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+        });
+        const result = await response.json();
+        if (Array.isArray(result)) setCategories(result);
+      } catch {}
+    };
+
+    const fetchGrades = async () => {
+      try {
+        const response = await fetch('http://localhost:8000/api/grades', {
+          headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+        });
+        const result = await response.json();
+        setGrades(result);
+      } catch {}
+    };
+
+    fetchCategories();
+    fetchGrades();
+  }, []);
+
+  const updateForm = (key: string, value: any) =>
+    setFormData((prev) => ({ ...prev, [key]: value }));
+
+  const handleCategorieChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const categoryId = e.target.value;
+    updateForm('selectedCategorieId', categoryId);
+
+    const selectedCategory = categories.find((c) => c.id.toString() === categoryId);
+    if (selectedCategory) {
+      const { id_grade_max, id_grade_min, sexe } = selectedCategory;
+      const genreMap: Record<string, string> = { H: 'Homme', F: 'Femme', M: 'Mixte' };
+
+      const selectedGradeMax = grades.find((g) => g.id === id_grade_max);
+      const selectedGradeMin = grades.find((g) => g.id === id_grade_min);
+
+      setFormData((prev) => ({
+        ...prev,
+        genre: genreMap[sexe] || '',
+        id_grade_max,
+        id_grade_min,
+        gradeMin: selectedGradeMin?.nom || '',
+        gradeMax: selectedGradeMax?.nom || '',
+      }));
     }
-
-    console.log({
-      nom,
-      grade,
-      date,
-      importType,
-      genre,
-      systeme,
-      participantsLimit,
-      sponsor,
-    });
-
-    setMessage('Tournoi ajouté avec succès ✅');
   };
 
+  const isFormValid = () =>
+    formData.nom.trim() !== '' &&
+    formData.date !== '' &&
+    formData.systeme !== '' &&
+    (!showSponsor || formData.sponsor.trim() !== '') &&
+    (!showLimit || formData.participantsLimit !== '') &&
+    formData.gradeMin !== '' &&
+    formData.gradeMax !== '' &&
+    formData.selectedCategorieId !== '' &&
+    formData.genre !== '';
+
+  const toggleGestionParticipants = () =>
+    setShowGestionParticipants((prev) => !prev);
+
   return (
-    <div className="container" style={{ maxWidth: '500px', marginTop: '50px' }}>
+    <div className="container mt-5">
       <h2 className="text-center text-primary mb-4">Ajouter un tournoi sur place</h2>
-      <form onSubmit={handleSubmit}>
-        <Input
-          label="Nom du tournoi"
-          type="text"
-          placeholder="Entrez le nom du tournoi"
-          value={nom}
-          onChange={(e) => setNom(e.target.value)}
-          required
-        />
+      {showGestionParticipants ? (
+        <GestionParticipants participants={[]} setParticipants={() => {}} />
+      ) : (
+        <form>
+          <Row>
+            <Col>
+              <Input
+                label="Nom du tournoi"
+                type="text"
+                placeholder="Entrez le nom du tournoi"
+                value={formData.nom}
+                onChange={(e) => updateForm('nom', e.target.value)}
+                required
+              />
+              <Input
+              placeholder=''
+                label="Date du tournoi"
+                type="date"
+                value={formData.date}
+                onChange={(e) => updateForm('date', e.target.value)}
+                required
+              />
+              <Select
+                label="Système d’élimination"
+                value={formData.systeme}
+                onChange={(e) => updateForm('systeme', e.target.value)}
+                options={[
+                  { value: '', label: 'Sélectionner un système' },
+                  { value: 'Poule', label: 'Poule' },
+                  { value: 'Élimination directe', label: 'Élimination directe' },
+                ]}
+              />
 
-        <Select
-          label="Grade"
-          value={grade}
-          onChange={(e) => setGrade(e.target.value)}
-          options={[
-            '',
-            'Ceinture blanche',
-            'Ceinture jaune',
-            'Ceinture orange',
-            'Ceinture verte',
-            'Ceinture bleue',
-            'Ceinture marron',
-            'Ceinture noire 1ere dan',
-            'Ceinture noire 2eme dan',
-            'Ceinture noire 3eme dan',
-            'Ceinture noire 4eme dan',
-            'Ceinture noire 5eme dan',
-            'Ceinture noire 6eme dan',
-          ]}
-        />
+              <Checkbox
+                label="Ajouter un sponsor"
+                checked={showSponsor}
+                onChange={(e) => setShowSponsor(e.target.checked)}
+              />
+              {showSponsor && (
+                <Input
+                  label="Sponsor du tournoi"
+                  type="text"
+                  placeholder="Nom du sponsor"
+                  value={formData.sponsor}
+                  onChange={(e) => updateForm('sponsor', e.target.value)}
+                />
+              )}
 
-        <Input
-          label="Date du tournoi"
-          type="date"
-          placeholder="Date du tournoi"
-          value={date}
-          onChange={(e) => setDate(e.target.value)}
-          required
-        />
+              <Checkbox
+                label="Limiter le nombre de participants"
+                checked={showLimit}
+                onChange={(e) => setShowLimit(e.target.checked)}
+              />
+              {showLimit && (
+                <Input
+                  label="Limite de participants"
+                  type="number"
+                  placeholder="Nombre maximum de participants"
+                  value={formData.participantsLimit}
+                  onChange={(e) => updateForm('participantsLimit', e.target.value)}
+                />
+              )}
+            </Col>
 
-        <Select
-          label="Importation des participants"
-          value={importType}
-          onChange={(e) => setImportType(e.target.value)}
-          options={['Manuellement', 'CSV']}
-        />
+            <Col>
+              <Select
+                label="Sélectionner une catégorie"
+                value={formData.selectedCategorieId}
+                onChange={handleCategorieChange}
+                options={[
+                  { value: '', label: 'Sélectionner une catégorie' },
+                  ...categories.map((c) => ({ value: c.id.toString(), label: c.nom })),
+                ]}
+              />
+              <Select
+                label="Grade minimum"
+                value={formData.gradeMin}
+                onChange={(e) => updateForm('gradeMin', e.target.value)}
+                options={[
+                  { value: '', label: 'Sélectionner un grade minimum' },
+                  ...grades.map((g) => ({ value: g.nom, label: g.nom })),
+                ]}
+              />
+              <Select
+                label="Grade maximum"
+                value={formData.gradeMax}
+                onChange={(e) => updateForm('gradeMax', e.target.value)}
+                options={[
+                  { value: '', label: 'Sélectionner un grade maximum' },
+                  ...grades.map((g) => ({ value: g.nom, label: g.nom })),
+                ]}
+              />
+              <div>
+                <Radio
+                  name="genre"
+                  label="Homme"
+                  checked={formData.genre === 'Homme'}
+                  onChange={() => updateForm('genre', 'Homme')}
+                />
+                <Radio
+                  name="genre"
+                  label="Femme"
+                  checked={formData.genre === 'Femme'}
+                  onChange={() => updateForm('genre', 'Femme')}
+                />
+                <Radio
+                  name="genre"
+                  label="Mixte"
+                  checked={formData.genre === 'Mixte'}
+                  onChange={() => updateForm('genre', 'Mixte')}
+                />
+              </div>
+            </Col>
+          </Row>
 
-        {importType === 'CSV' && (
-          <div className="mb-3">
-            <label className="form-label text-dark fw-bold">Importer un fichier CSV</label>
-            <Input
-              label="Fichier CSV"
-              type="file"
-              accept=".csv"
-              onChange={(e) => setCsvFile(e.target.files ? e.target.files[0] : null)}
-            />
-          </div>
-        )}
-
-        <div className="mb-3">
-          <label className="form-label text-dark fw-bold">Genre</label>
-          <div>
-            <Radio
-              label="Homme"
-              name="genre"
-              checked={genre === 'Homme'}
-              onChange={() => setGenre('Homme')}
-            />
-            <Radio
-              label="Femme"
-              name="genre"
-              checked={genre === 'Femme'}
-              onChange={() => setGenre('Femme')}
-            />
-            <Radio
-              label="Mixte"
-              name="genre"
-              checked={genre === 'Mixte'}
-              onChange={() => setGenre('Mixte')}
-            />
-          </div>
-        </div>
-
-        <Select
-          label="Système d’élimination"
-          value={systeme}
-          onChange={(e) => setSysteme(e.target.value)}
-          options={['', 'Poule', 'Élimination directe']}
-        />
-
-        <Input
-          label="Limite de participants"
-          type="number"
-          placeholder="Nombre maximum de participants"
-          value={participantsLimit}
-          onChange={(e) => setParticipantsLimit(e.target.value)}
-        />
-
-        <Input
-          label="Sponsor du tournoi"
-          type="text"
-          placeholder="Nom du sponsor"
-          value={sponsor}
-          onChange={(e) => setSponsor(e.target.value)}
-        />
-
-        {message && <p className="text-success">{message}</p>}
-
-        <div className="d-grid mt-3">
-          <ButtonPrimaryy>Ajouter le tournoi</ButtonPrimaryy>
-        </div>
-      </form>
-
-      <Link href="/gestionparticipants">
-        <button
-          className="btn"
-          style={{
-            backgroundColor: 'var(--bg-button-primary)',
-            color: 'var(--text-button-primary)',
-            borderColor: 'var(--border-button-primary)',
-          }}
-        >
-          Aller à la gestion des participants
-        </button>
-      </Link>
+          <Row className="mt-3">
+            <Col>
+              <ButtonPrimaryy
+                type="button"
+                onClick={toggleGestionParticipants}
+                disabled={!isFormValid()}
+              >
+                Aller à la gestion des participants
+              </ButtonPrimaryy>
+              {!isFormValid() && (
+                <p className="text-danger mt-2">
+                  Veuillez remplir tous les champs obligatoires avant de continuer.
+                </p>
+              )}
+            </Col>
+          </Row>
+        </form>
+      )}
     </div>
   );
 };

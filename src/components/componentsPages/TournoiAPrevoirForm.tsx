@@ -22,7 +22,15 @@ const TournoiAPrevoirForm: React.FC = () => {
 
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
-
+  
+    if (!nom || !grade || !date || !importType || !genre || !systeme || !participantsLimit || !inscriptionMode || !registrationDeadline || (showReglement && !reglement) || (showLieu && !lieu)) {
+      setMessage("Merci de remplir tous les champs requis avant de continuer ❌");
+      return;
+    }
+  
+    // Si tout est ok
+    setMessage('Tournoi ajouté avec succès ✅');
+  
     console.log({
       nom,
       grade,
@@ -37,11 +45,26 @@ const TournoiAPrevoirForm: React.FC = () => {
       registrationDeadline,
       sponsor,
     });
-
-    setMessage('Tournoi ajouté avec succès ✅');
+  
     resetForm();
   };
-
+  
+  const isFormValid = () => {
+    return (
+      nom &&
+      grade &&
+      date &&
+      importType &&
+      genre &&
+      systeme &&
+      participantsLimit &&
+      inscriptionMode &&
+      registrationDeadline &&
+      (!showReglement || reglement) &&
+      (!showLieu || lieu)
+    );
+  };
+  
   const resetForm = () => {
     setNom('');
     setGrade('');
@@ -202,7 +225,7 @@ const TournoiAPrevoirForm: React.FC = () => {
         {message && <p className="text-success">{message}</p>}
 
         <div className="d-grid mt-3">
-          <ButtonPrimaryy>Ajouter le tournoi</ButtonPrimaryy>
+        <ButtonPrimaryy disabled={!isFormValid()}>Ajouter le tournoi</ButtonPrimaryy>
         </div>
       </form>
     </div>

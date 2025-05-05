@@ -1,5 +1,4 @@
-'use client';
-
+'use client'
 import React, { useState, useEffect } from 'react';
 import { Input, Checkbox, ButtonPrimaryy, Select } from '../../components/ComponentForm';
 
@@ -13,8 +12,8 @@ export default function Categorie() {
   const [gradeMax, setGradeMax] = useState('');
   const [gradeMinRequired, setGradeMinRequired] = useState(false);
   const [gradeMaxRequired, setGradeMaxRequired] = useState(false);
-  const [sexe, setSexe] = useState('M');
-  const [grades, setGrades] = useState([]); 
+  const [sexe, setSexe] = useState('Homme'); // Default to 'Homme'
+  const [grades, setGrades] = useState([]);
   const [message, setMessage] = useState('');
   const [erreur, setErreur] = useState('');
   const [noPoidsRestriction, setNoPoidsRestriction] = useState(false);
@@ -48,13 +47,13 @@ export default function Categorie() {
     if (!noPoidsRestriction) {
       const poidsMinVal = parseFloat(poidsMin);
       const poidsMaxVal = parseFloat(poidsMax);
-    
+
       if (poidsMinVal < 3 || poidsMaxVal > 300) {
         setErreur('Le poids doit être compris entre 3 kg et 300 kg.');
         setMessage('');
         return;
       }
-    
+
       if (poidsMinVal > poidsMaxVal) {
         setErreur('Le poids minimum ne peut pas être supérieur au poids maximum.');
         setMessage('');
@@ -68,34 +67,36 @@ export default function Categorie() {
       setMessage('');
       return;
     }
-    
+
     if (ageMinVal > ageMaxVal) {
       setErreur("L'âge minimum ne peut pas être supérieur à l'âge maximum.");
       setMessage('');
       return;
     }
-    
+
     if ((gradeMinRequired && !gradeMin) || (gradeMaxRequired && !gradeMax)) {
       setErreur('Veuillez remplir les grades minimum ou maximum si requis.');
       setMessage('');
       return;
     }
-    
+
     if (gradeMinRequired && gradeMaxRequired && parseInt(gradeMin) > parseInt(gradeMax)) {
       setErreur('Le grade minimum ne peut pas être supérieur au grade maximum.');
       setMessage('');
       return;
-    }    
+    }
+    const sexeMapped = sexe === 'Homme' ? 'H' : sexe === 'Femme' ? 'F' : 'M';
+
     const data = {
       nom,
-      sexe,
+      sexe: sexeMapped,
       poidsMin: noPoidsRestriction ? null : parseFloat(poidsMin),
       poidsMax: noPoidsRestriction ? null : parseFloat(poidsMax),
       ageMin: parseInt(ageMin),
       ageMax: parseInt(ageMax),
       gradeMin: gradeMinRequired ? parseInt(gradeMin) : null,
       gradeMax: gradeMaxRequired ? parseInt(gradeMax) : null,
-      noPoidsRestriction, 
+      noPoidsRestriction,
     };
     console.log(data);
     try {
@@ -216,8 +217,9 @@ export default function Categorie() {
             value={sexe}
             onChange={(e) => setSexe(e.target.value)}
             options={[
-              { value: 'M', label: 'Masculin' },
-              { value: 'F', label: 'Féminin' },
+              { value: 'Homme', label: 'Homme' },
+              { value: 'Femme', label: 'Femme' },
+              { value: 'Mixte', label: 'Mixte' },
             ]}
           />
         </div>
