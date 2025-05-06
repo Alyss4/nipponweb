@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Input } from '../../components/ComponentForm';
+import { Input, Checkbox, ButtonPrimaryy, Select } from '../../components/componentsUI/ComponentForm';
 import { useRouter } from 'next/navigation'; 
 
 export default function InscriptionPage() {

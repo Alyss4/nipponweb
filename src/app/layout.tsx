@@ -5,7 +5,7 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import 'flag-icons/css/flag-icons.min.css';
 import './globals.css';
 import Link from 'next/link';
-import UserSidebarInfo from '../components/UserSidebarInfo';
+import UserSidebarInfo from '../components/componentsSidebar/UserSidebarInfo';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation'; 
 import VisitorSidebarLinks from '../components/componentsSidebar/VisitorSidebarLinks';

@@ -1,6 +1,6 @@
 "use client";
 import React, { useEffect, useState } from 'react';
-import { Checkbox, ButtonPrimaryy, ButtonSecondaryy } from '../../components/ComponentForm';
+import { Input, Select, ButtonPrimaryy, Checkbox, ButtonSecondaryy } from '../../components/componentsUI/ComponentForm';
 import { useParticipants } from '../../app/hooks/useParticipants';
 import ParticipantTable from '../componentsTables/ParticipantTable';
 import OptionsImportation from '../gestionParticipants/OptionsImportation';

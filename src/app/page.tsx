@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import Button, { ButtonStyles } from '../components/componentsPages/AccueilButton';
+import Button, { ButtonStyles } from '../components/componentsUI/AccueilButton';
 import {
   FaUserPlus, FaTrophy, FaBookOpen, FaClipboardList,
   FaUsersCog, FaCheckCircle, FaUserCircle, FaTags,

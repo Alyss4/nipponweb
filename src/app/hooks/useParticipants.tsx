@@ -21,7 +21,7 @@ export const useParticipants = () => {
     nom: '',
     prenom: '',
     date_naissance: '',
-    sexe: 'H',  // "genre" => "sexe"
+    sexe: 'H',
     poids: undefined,
     id_club: undefined,
     id_grade: undefined,
@@ -41,7 +41,7 @@ export const useParticipants = () => {
 
   const handleAddParticipant = () => {
     const { nom, prenom, date_naissance, sexe, id_club, id_grade, id_pays } = newParticipant;
-    console.log("Nouvel participant:", newParticipant); // Ajoute un log ici pour voir ce que tu obtiens
+    console.log("Nouvel participant:", newParticipant); 
     if (nom && prenom && date_naissance && sexe && id_club && id_grade && id_pays) {
       console.log("Participant validé, ajout à la liste...");
       setParticipants((prev) => [...prev, newParticipant]);
@@ -64,7 +64,7 @@ export const useParticipants = () => {
         id_club,
         id_grade,
         id_pays,
-      }); // Ajoute un log pour identifier quels champs sont vides
+      }); 
       alert('Veuillez remplir tous les champs.');
     }
   };

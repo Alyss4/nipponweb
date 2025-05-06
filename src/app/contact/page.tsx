@@ -1,8 +1,7 @@
 'use client';
 
 import React, { useState, ChangeEvent } from 'react';
-import { Input, ButtonPrimaryy } from '../../components/ComponentForm';
-
+import { Input, Checkbox, ButtonPrimaryy, Select } from '../../components/componentsUI/ComponentForm';
 interface ContactData {
   nom: string;
   email: string;

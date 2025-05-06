@@ -1,5 +1,5 @@
 import React from 'react';
-import { Input, Radio } from '../../components/ComponentForm';
+import { Input, Radio, Select, ButtonPrimaryy } from '../componentsUI/ComponentForm';
 
 interface Props {
   importType: 'CSV' | 'Manuellement';

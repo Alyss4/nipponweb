@@ -1,6 +1,6 @@
 'use client'
 import React, { useState, useEffect } from 'react';
-import { Input, Checkbox, ButtonPrimaryy, Select } from '../../components/ComponentForm';
+import { Input, Checkbox, ButtonPrimaryy, Select } from '../../components/componentsUI/ComponentForm';
 
 export default function Categorie() {
   const [nom, setNom] = useState('');

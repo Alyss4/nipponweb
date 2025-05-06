@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, ChangeEvent } from 'react';
-import { Input, ButtonPrimaryy, ButtonSecondaryy } from '../../components/ComponentForm';
+import { Input, ButtonPrimaryy, ButtonSecondaryy } from '../../components/componentsUI/ComponentForm';
 import { useRouter } from 'next/navigation';
 
 export default function ConnexionPage() {

@@ -1,6 +1,6 @@
 'use client';
 import React from 'react';
-import { Input, Select, ButtonPrimaryy } from '../../components/ComponentForm';
+import { Input, Select, ButtonPrimaryy } from '../componentsUI/ComponentForm';
 import { Grade, Pays, Club, Participant } from '../gestionParticipants/types';
 
 const sexeOptions = [

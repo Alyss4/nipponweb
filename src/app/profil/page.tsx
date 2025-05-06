@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useState, ChangeEvent } from 'react';
-import { Input, ButtonPrimaryy, ButtonSecondaryy } from '../../components/ComponentForm';
+import { Input, Checkbox, ButtonPrimaryy, Select } from '../../components/componentsUI/ComponentForm';
 import { useRouter } from 'next/navigation';
 
 export default function ProfilPage() {
