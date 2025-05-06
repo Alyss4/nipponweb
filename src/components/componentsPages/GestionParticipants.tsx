@@ -33,23 +33,25 @@ const GestionParticipants: React.FC<GestionParticipantsProps> = ({ formData }) =
         checked={ajoutParticipantsPlusTard}
         onChange={(e) => setAjoutParticipantsPlusTard(e.target.checked)}
       />
-
-      <OptionsImportation
-        importType={importType}
-        setImportType={setImportType}
-        ajoutParticipantsPlusTard={ajoutParticipantsPlusTard}
-        handleCSVImport={(e) => handleCSVImport(e, setParticipants)}
-      />
-
       {!ajoutParticipantsPlusTard && (
-        <FormulaireParticipant
-          handleInputChange={handleInputChange}
-          newParticipant={newParticipant}
-          handleAddParticipant={handleAddParticipant}
-          grades={grades}
-          pays={pays}
-          clubs={clubs}
+        <>
+        <OptionsImportation
+          importType={importType}
+          setImportType={setImportType}
+          ajoutParticipantsPlusTard={ajoutParticipantsPlusTard}
+          handleCSVImport={(e) => handleCSVImport(e, setParticipants)}
         />
+        {importType === 'Manuellement' && (
+          <FormulaireParticipant
+            handleInputChange={handleInputChange}
+            newParticipant={newParticipant}
+            handleAddParticipant={handleAddParticipant}
+            grades={grades}
+            pays={pays}
+            clubs={clubs}
+            />
+          )}
+        </>
       )}
 
       <Checkbox
