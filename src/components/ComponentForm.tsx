@@ -199,13 +199,13 @@ const Select: React.FC<SelectProps> = ({ label, value, onChange, options, withCu
 };
 
 
-const ButtonPrimaryy: React.FC<React.ButtonHTMLAttributes<HTMLButtonElement>> = ({ children, ...props }) => {
+const ButtonPrimaryy: React.FC<React.ButtonHTMLAttributes<HTMLButtonElement>> = ({ children, className, ...props }) => {
   const [buttonColor, setButtonColor] = useState('var(--bg-button-primary)');
 
   return (
     <button
       {...props}
-      className="btn w-100"
+      className={`btn ${className ?? ""}`}
       style={{
         backgroundColor: buttonColor,
         color: 'var(--text-button-primary)',
@@ -220,12 +220,14 @@ const ButtonPrimaryy: React.FC<React.ButtonHTMLAttributes<HTMLButtonElement>> = 
 };
 
 
-const ButtonSecondaryy: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+
+const ButtonSecondaryy: React.FC<React.ButtonHTMLAttributes<HTMLButtonElement>> = ({ children, className, ...props }) => {
   const [buttonColor, setButtonColor] = useState('var(--bg-button-secondary)');
 
   return (
     <button
-      className="btn w-100"
+      {...props}
+      className={`btn ${className ?? ""}`}
       style={{
         backgroundColor: buttonColor,
         color: 'var(--text-button-secondary)',
@@ -239,5 +241,6 @@ const ButtonSecondaryy: React.FC<{ children: React.ReactNode }> = ({ children })
     </button>
   );
 };
+
 
 export { Input, Checkbox, Radio, Select, ButtonPrimaryy, ButtonSecondaryy };

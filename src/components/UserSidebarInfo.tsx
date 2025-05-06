@@ -47,11 +47,11 @@ export default function UserSidebarInfo() {
     }
   };
 
-  if (!email) return <h2 className="fs-5 mb-3 text-secondary">Invité</h2>;
+  if (!email) return <p className="text-primary">Invité</p>;
 
   return (
-    <div className=''>
-      <h2 className="text-primary fs-5 mb-1">{email}</h2>
+    <div className='d-flex'>
+      <p className="text-primary mb-1">{email}</p>
       <p className="text-primary">Rôle : {role === 'u' ? 'Utilisateur' : role === 'g' ? 'Gestionnaire' : role === 'a' ? 'Admin' : 'Visiteur'}</p>
     </div>
   );

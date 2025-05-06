@@ -73,7 +73,7 @@ export default function RootLayout({
           </div>
         </aside>
 
-        <main className="flex-grow-1 p-4" style={{ backgroundColor: 'var(--bg-secondary)' }}>
+        <main className="flex-grow-1 p-2" style={{ backgroundColor: 'var(--bg-secondary)' }}>
           <div className="d-flex justify-content-end mb-3">
             <UserSidebarInfo />
             {!isAuthenticated ? (

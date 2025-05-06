@@ -1,7 +1,7 @@
 import React, { useState, useEffect, ChangeEvent } from 'react';
 import Row from '../Row';
 import Col from '../Col';
-import GestionParticipants from '../componentsPages/GestionParticipantsForm';
+import GestionParticipants from './GestionParticipants';
 import { Input, Select, Radio, ButtonPrimaryy, Checkbox } from '../ComponentForm';
 
 type Categorie = {
@@ -12,7 +12,7 @@ type Categorie = {
   id_grade_min: number;
 };
 
-const TournoiSurPlaceForm: React.FC = () => {
+const TournoiForm: React.FC = () => {
   const [formData, setFormData] = useState({
     nom: '',
     gradeMin: '',
@@ -27,6 +27,8 @@ const TournoiSurPlaceForm: React.FC = () => {
     selectedCategorieId: '',
     id_grade_max: null as number | null,
     id_grade_min: null as number | null,
+    lieu: '',
+    description: '',
   });
 
   const [categories, setCategories] = useState<Categorie[]>([]);
@@ -86,26 +88,48 @@ const TournoiSurPlaceForm: React.FC = () => {
     }
   };
 
-  const isFormValid = () =>
-    formData.nom.trim() !== '' &&
-    formData.date !== '' &&
-    formData.systeme !== '' &&
-    (!showSponsor || formData.sponsor.trim() !== '') &&
-    (!showLimit || formData.participantsLimit !== '') &&
-    formData.gradeMin !== '' &&
-    formData.gradeMax !== '' &&
-    formData.selectedCategorieId !== '' &&
-    formData.genre !== '';
-
-  const toggleGestionParticipants = () =>
+  const isFormValid = () => {
+    const {
+      nom,
+      date,
+      systeme,
+      sponsor,
+      participantsLimit,
+      gradeMin,
+      gradeMax,
+      selectedCategorieId,
+      lieu,
+      description,
+      genre,
+    } = formData;
+  
+    return (
+      nom.trim() !== '' &&
+      date !== '' &&
+      systeme !== '' &&
+      (!showSponsor || sponsor.trim() !== '') &&
+      (!showLimit || (participantsLimit !== '' && !isNaN(Number(participantsLimit)) && Number(participantsLimit) > 0)) &&
+      gradeMin !== '' &&
+      gradeMax !== '' &&
+      selectedCategorieId !== '' &&
+      lieu.trim() !== '' &&
+      description.trim() !== '' &&
+      genre !== ''
+    );
+  };
+  
+  const toggleGestionParticipants = () => {
+    console.log('Form data:', formData); 
     setShowGestionParticipants((prev) => !prev);
+  };
 
   return (
-    <div className="container mt-5">
-      <h2 className="text-center text-primary mb-4">Ajouter un tournoi sur place</h2>
+    <div className="container mt-3">
       {showGestionParticipants ? (
-        <GestionParticipants participants={[]} setParticipants={() => {}} />
+      <GestionParticipants formData={formData} />
       ) : (
+        <>
+      <h2 className="text-center text-o-primary mb-4">Ajouter un tournoi sur place</h2>
         <form>
           <Row>
             <Col>
@@ -125,6 +149,24 @@ const TournoiSurPlaceForm: React.FC = () => {
                 onChange={(e) => updateForm('date', e.target.value)}
                 required
               />
+              <Input
+                label="Lieu du tournoi"
+                type="text"
+                placeholder="Entrez le lieu du tournoi"
+                value={formData.lieu}
+                onChange={(e) => updateForm('lieu', e.target.value)}
+                required
+              />
+
+              <Input
+                label="Description"
+                type="text"
+                placeholder="Entrez une description"
+                value={formData.description}
+                onChange={(e) => updateForm('description', e.target.value)}
+                required
+              />
+
               <Select
                 label="Système d’élimination"
                 value={formData.systeme}
@@ -235,9 +277,10 @@ const TournoiSurPlaceForm: React.FC = () => {
             </Col>
           </Row>
         </form>
+        </>
       )}
     </div>
   );
 };
 
-export default TournoiSurPlaceForm;
+export default TournoiForm;
