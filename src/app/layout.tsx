@@ -63,7 +63,9 @@ export default function RootLayout({
       </Head>
       <body className="d-flex" style={{ fontFamily: 'Luciole, sans-serif', minHeight: '100vh' }}>
         <aside className="text-light p-3 d-flex flex-column" style={{ width: '13%', backgroundColor: 'var(--bg-primary)', minHeight: '100vh' }}>
+          <a href="/">
           <img src="./icon.png" alt="Logo Nippon Kempo" className="mx-auto d-block" style={{ width: '80%' }} />
+          </a>
           <div className="flex-grow-1">
             {renderSidebarLinks()}
             <h6 className="text-warning mt-3">Test</h6>

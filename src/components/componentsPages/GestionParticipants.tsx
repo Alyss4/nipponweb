@@ -1,7 +1,7 @@
 "use client";
 import React, { useEffect, useState } from 'react';
 import { Input, Select, ButtonPrimaryy, Checkbox, ButtonSecondaryy } from '../../components/componentsUI/ComponentForm';
-import { useParticipants } from '../../app/hooks/useParticipants';
+import { useParticipants } from '../../hooks/useParticipants';
 import ParticipantTable from '../componentsTables/ParticipantTable';
 import OptionsImportation from '../gestionParticipants/OptionsImportation';
 import FormulaireParticipant from '../gestionParticipants/FormulaireParticipants';

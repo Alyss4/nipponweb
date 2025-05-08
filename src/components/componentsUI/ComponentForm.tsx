@@ -153,6 +153,7 @@ interface SelectProps {
   options: { value: string; label: string }[]; 
   withCustomOption?: boolean;
   onCustomOptionChange?: (event: ChangeEvent<HTMLInputElement>) => void;
+  required?: boolean;
 }
 
 

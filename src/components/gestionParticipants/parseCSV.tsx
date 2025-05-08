@@ -10,7 +10,6 @@ export const parseCSV = (content: string): Participant[] => {
   const rows = content.split("\n").filter((row) => row.trim() !== "");
   const headers = rows[0].split(",").map(h => h.trim());
 
-  // Correspondance des entêtes du CSV avec les clés de Participant
   const headerMap: Record<string, keyof Participant> = {
     "nom": "nom",
     "prénom": "prenom",
@@ -28,12 +27,11 @@ export const parseCSV = (content: string): Participant[] => {
     const participant: any = {};
 
     headers.forEach((header, i) => {
-      const key = headerMap[header.toLowerCase()];  // Ajouter toLowerCase pour gérer les majuscules
+      const key = headerMap[header.toLowerCase()];  
       if (!key) return; 
       participant[key] = values[i];
     });
 
-    // Conversion des types de données
     if (participant.poids) participant.poids = parseFloat(participant.poids);
     if (isNaN(participant.poids)) participant.poids = 0;
 
@@ -43,11 +41,10 @@ export const parseCSV = (content: string): Participant[] => {
     if (participant.id_grade) participant.id_grade = parseInt(participant.id_grade);
     if (isNaN(participant.id_grade)) participant.id_grade = 0;
 
-    // Conversion et gestion des dates
     if (participant.date_naissance) participant.date_naissance = formatDate(participant.date_naissance);
     if (participant.created_at) participant.created_at = formatDate(participant.created_at);
 
-    participant.updated_at = new Date().toISOString();  // Met à jour updated_at avec la date actuelle
+    participant.updated_at = new Date().toISOString(); 
 
     return participant as Participant;
   });

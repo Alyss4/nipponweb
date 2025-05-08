@@ -21,7 +21,11 @@
 .text-o-primary {
   color: var(--text-o-primary);
 }
-
+.flex-o-row {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+}
 @media (prefers-color-scheme: dark) {
   :root {
     --background: #0a0a0a;
@@ -70,4 +74,42 @@ a {
   html {
     color-scheme: dark;
   }
+}
+
+
+/* ProchainsTournoisModal.css */
+
+/* Grille pour les détails du tournoi */
+.tournament-details-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr); /* 2 colonnes */
+  gap: 1.5rem; /* Espacement entre les éléments */
+}
+
+/* Style pour les éléments à l'intérieur de la grille */
+.tournament-details-grid .detail-label {
+  font-weight: bold;
+  font-size: 0.875rem; /* Taille de police plus petite */
+  color: #2c3e50; /* Couleur de texte primaire */
+}
+
+.tournament-details-grid .detail-value {
+  font-size: 0.875rem;
+  color: #7f8c8d; /* Couleur secondaire pour les valeurs */
+}
+
+/* Style général de la modal */
+.modal-content {
+  background-color: #f8f9fa;
+  padding: 1rem;
+  border-radius: 0.75rem; /* Coins arrondis */
+  border: 1px solid #ddd;
+  box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.modal-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+  color: #333;
 }

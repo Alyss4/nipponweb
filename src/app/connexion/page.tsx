@@ -24,6 +24,13 @@ export default function ConnexionPage() {
     setError(null);
     setLoading(true);
 
+    // Vérification de la validité de l'email
+    if (!email || !/\S+@\S+\.\S+/.test(email)) {
+      setError('Veuillez entrer un email valide.');
+      setLoading(false);
+      return;
+    }
+
     try {
       const response = await fetch('http://127.0.0.1:8000/api/connexion', {
         method: 'POST',
@@ -45,11 +52,14 @@ export default function ConnexionPage() {
         return;
       }
 
+      // Stockage du token et du rôle dans le localStorage
       localStorage.setItem('token', data.token);
       localStorage.setItem('role', data.utilisateur.role);
+      localStorage.setItem('userId', data.utilisateur.id);  // Ajout de l'ID utilisateur pour utilisation future
 
       const role = data.utilisateur.role;
 
+      // Redirection en fonction du rôle
       if (role === 'admin') {
         router.push('/admin/dashboard');
       } else if (role === 'user') {
@@ -90,7 +100,9 @@ export default function ConnexionPage() {
         />
 
         <div className="d-grid gap-2 mb-2">
-          <ButtonPrimaryy>Se connecter</ButtonPrimaryy>
+          <ButtonPrimaryy type="submit" disabled={loading}>
+            {loading ? 'Chargement...' : 'Se connecter'}
+          </ButtonPrimaryy>
         </div>
 
         <div className="d-grid gap-2">
@@ -100,7 +112,6 @@ export default function ConnexionPage() {
         </div>
       </form>
       {error && <p className="text-danger">{error}</p>}
-      {loading && <p>Chargement...</p>}
     </div>
   );
 }
