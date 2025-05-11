@@ -94,7 +94,9 @@ interface RadioProps {
   name: string;
   checked: boolean;
   onChange: (event: ChangeEvent<HTMLInputElement>) => void;
+  disabled?: boolean;
 }
+
 
 const Radio: React.FC<RadioProps> = ({ label, name, checked, onChange, ...props }) => {
   return (
@@ -150,11 +152,13 @@ interface SelectProps {
   label: string;
   value: string;
   onChange: (event: ChangeEvent<HTMLSelectElement>) => void;
-  options: { value: string; label: string }[]; 
+  options: { value: string; label: string }[];
   withCustomOption?: boolean;
   onCustomOptionChange?: (event: ChangeEvent<HTMLInputElement>) => void;
   required?: boolean;
+  disabled?: boolean;
 }
+
 
 
 const Select: React.FC<SelectProps> = ({ label, value, onChange, options, withCustomOption, onCustomOptionChange, ...props }) => {

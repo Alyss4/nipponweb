@@ -8,6 +8,7 @@ import FormulaireParticipant from '../gestionParticipants/FormulaireParticipants
 import { parseCSV } from '../gestionParticipants/parseCSV';
 import { Grade, GestionParticipantsProps, Pays, Club } from '../gestionParticipants/types';
 import { fetchGrades,fetchClub, fetchPays, handleCSVImport, handleCreateTournoi } from '../gestionParticipants/logic';
+import { useRouter } from 'next/navigation';
 
 const GestionParticipants: React.FC<GestionParticipantsProps> = ({ formData }) => {
   const [importType, setImportType] = useState<'CSV' | 'Manuellement'>('Manuellement');
@@ -17,6 +18,7 @@ const GestionParticipants: React.FC<GestionParticipantsProps> = ({ formData }) =
   const [grades, setGrades] = useState<Grade[]>([]);
   const [pays, setPays] = useState<Pays[]>([]);
   const [clubs, setClub] = useState<Club[]>([]);
+  const router = useRouter();
 
   useEffect(() => { fetchGrades(setGrades); fetchPays(setPays); fetchClub(setClub); }, []);
 
@@ -61,9 +63,17 @@ const GestionParticipants: React.FC<GestionParticipantsProps> = ({ formData }) =
       />
 
       <div className="d-flex gap-2 mt-3">
-        <ButtonPrimaryy onClick={() => handleCreateTournoi(formData, "lance", participants, ajoutParticipantsPlusTard)}>
+        <ButtonPrimaryy
+          onClick={async () => {
+            const tournoi = await handleCreateTournoi(formData, "lance", participants, ajoutParticipantsPlusTard);
+            if (tournoi && tournoi.id) {
+              router.push(`/poules/${tournoi.id}`);
+            }
+          }}
+        >
           Continuer et lancer
         </ButtonPrimaryy>
+
         <ButtonSecondaryy onClick={() => handleCreateTournoi(formData, "inscriptions_ouvertes", participants, ajoutParticipantsPlusTard)}>
           Enregistrer et ouvrir les inscriptions
         </ButtonSecondaryy>

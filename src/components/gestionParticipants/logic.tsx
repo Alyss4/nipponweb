@@ -70,31 +70,64 @@ const handleCreateParticipants = async (tournoiId: number, participants: Partici
     console.error(err);
   }
 };
-
 export const handleCreateTournoi = async (
   formData: any,
   statut: string,
   participants: Participant[],
   ajoutParticipantsPlusTard: boolean
-) => {
+): Promise<{ id: number } | null> => {
   try {
+    const userId = Number(localStorage.getItem('userId')) || 0;
+    const token = localStorage.getItem('token');
+
+    if (!token) {
+      alert("Token d'authentification manquant.");
+      return null;
+    }
+
+    const parseOptionalNumber = (value: any) =>
+      value !== undefined && value !== null && value !== '' ? Number(value) : null;
+
+    const body = {
+      nom: formData.nom,
+      date: formData.date,
+      lieu: formData.lieu,
+      description: formData.description || null,
+      systemeElimination: formData.systemeElimination,
+      sponsor: formData.sponsor || null,
+      id_categorie: parseOptionalNumber(formData.selectedCategorieId),
+      id_grade_max: parseOptionalNumber(formData.id_grade_max),
+      id_grade_min: parseOptionalNumber(formData.id_grade_min),
+      id_utilisateur: userId,
+      nombre_participants: parseOptionalNumber(formData.participantsLimit),
+      genre: formData.genre,
+      statut,
+    };
+
     const response = await fetch('http://localhost:8000/api/tournois', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${localStorage.getItem('token')}`,
+        Authorization: `Bearer ${token}`,
       },
-      body: JSON.stringify({ ...formData, statut }),
+      body: JSON.stringify(body),
     });
 
     const tournoi = await response.json();
-    if (!response.ok) throw new Error(tournoi.message || "Erreur lors de la création du tournoi");
 
-    if (!ajoutParticipantsPlusTard) await handleCreateParticipants(tournoi.id, participants);
+    if (!response.ok) {
+      throw new Error(tournoi.message || 'Erreur lors de la création du tournoi');
+    }
 
-    alert("Tournoi enregistré avec succès !");
+    if (!ajoutParticipantsPlusTard) {
+      await handleCreateParticipants(tournoi.id, participants);
+    }
+
+    alert('Tournoi enregistré avec succès !');
+    return tournoi;
   } catch (err) {
-    alert("Échec de la création du tournoi.");
-    console.error(err);
+    alert('Échec de la création du tournoi.');
+    console.error('Erreur lors de la création du tournoi :', err);
+    return null;
   }
 };

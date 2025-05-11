@@ -59,7 +59,7 @@ export default function Dashboard() {
           <>
             <Button icon={FaLayerGroup} label="Créer Catégories" href="/categorie" />
             <Button icon={FaUserPlus} label="Créer Tournoi" onClick={handleCreateTournoi} />
-            <Button icon={FaTrophy} label="Voir / Lancer un tournoi" href="/gestionparticipants" />
+            <Button icon={FaTrophy} label="Lancer un tournoi" href="/gestionparticipants" />
             <Button icon={FaUserCircle} label="Mon Profil" href="/profil" />
           </>
         );
