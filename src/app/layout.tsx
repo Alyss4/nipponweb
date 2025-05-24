@@ -12,6 +12,8 @@ import VisitorSidebarLinks from '../components/componentsSidebar/VisitorSidebarL
 import CompetitorSidebarLinks from '@/components/componentsSidebar/CompetitorSidebarLinks';
 import ManagerSidebarLinks from '@/components/componentsSidebar/ManagerSidebarLinks';
 import AdministratorSidebarLinks from '@/components/componentsSidebar/AdministratorSidebarLinks';
+import RetourButton from '@/components/ui/RetourButton';
+import { ButtonSecondaryy } from '@/components/ui/ComponentForm';
 
 export default function RootLayout({
   children,
@@ -78,6 +80,7 @@ export default function RootLayout({
         <main className="flex-grow-1 p-2" style={{ backgroundColor: 'var(--bg-secondary)' }}>
           <div className="d-flex justify-content-end mb-3">
             <UserSidebarInfo />
+            <RetourButton/>
             {!isAuthenticated ? (
               <>
                 <Link href="/inscription">
@@ -106,17 +109,11 @@ export default function RootLayout({
                 </Link>
               </>
             ) : (
-              <button
+              <ButtonSecondaryy
                 onClick={handleLogout}
-                className="btn"
-                style={{
-                  backgroundColor: 'var(--bg-button-secondary)',
-                  color: 'var(--text-button-secondary)',
-                  borderColor: 'var(--border-button-secondary)',
-                }}
               >
                 Déconnexion
-              </button>
+              </ButtonSecondaryy>
             )}
           </div>
           {children}
