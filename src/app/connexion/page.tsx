@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, ChangeEvent } from 'react';
-import { Input, ButtonPrimaryy, ButtonSecondaryy } from '../../components/componentsUI/ComponentForm';
+import { Input, ButtonPrimaryy, ButtonSecondaryy } from '../../components/ui/ComponentForm';
 import { useRouter } from 'next/navigation';
 
 export default function ConnexionPage() {
@@ -105,9 +105,9 @@ export default function ConnexionPage() {
           </ButtonPrimaryy>
         </div>
 
-        <div className="d-grid gap-2">
-          <div onClick={handleInscription}>
-            <ButtonSecondaryy>S’inscrire</ButtonSecondaryy>
+        <div className="d-grid gap-2 ">
+          <div onClick={handleInscription} >
+            <ButtonSecondaryy className='w-100'>S’inscrire</ButtonSecondaryy>
           </div>
         </div>
       </form>
