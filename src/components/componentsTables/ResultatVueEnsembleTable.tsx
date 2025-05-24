@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Checkbox } from '../../components/componentsUI/ComponentForm';
+import { Checkbox } from '../ui/ComponentForm';
 
 interface Resultat {
   id: number;

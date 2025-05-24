@@ -1,9 +1,15 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import ProchainsTournoisTable from '@/components/componentsTables/ProchainsTournoisTable';
-import { ButtonPrimaryy, ButtonSecondaryy, Checkbox } from '../../components/componentsUI/ComponentForm';
-import LaModal from '../../components/componentsUI/Modal';
+import {
+  ButtonPrimaryy,
+  ButtonSecondaryy,
+  Checkbox,
+  Select,
+} from '@/components/ui/ComponentForm';
+import LaModal from '@/components/ui/Modal';
 
 interface Tournoi {
   id: number;
@@ -24,6 +30,16 @@ interface Tournoi {
   is_public?: boolean | number;
 }
 
+interface Grade {
+  id: number;
+  nom: string;
+}
+
+interface Categorie {
+  id: number;
+  nom: string;
+}
+
 export default function ProchainsTournois() {
   const [tournois, setTournois] = useState<Tournoi[]>([]);
   const [selectedTournoi, setSelectedTournoi] = useState<Tournoi | null>(null);
@@ -34,8 +50,44 @@ export default function ProchainsTournois() {
   const [showNonInscrits, setShowNonInscrits] = useState(false);
   const [sortByDate, setSortByDate] = useState<string | null>(null);
   const [etat, setEtat] = useState<string | null>(null);
+  const [message, setMessage] = useState<string | null>(null);
+  const [inscriptionDisabled, setInscriptionDisabled] = useState(false);
+  const [grades, setGrades] = useState<Grade[]>([]);
+  const [categories, setCategories] = useState<Categorie[]>([]);
 
-  const idUtilisateurCourant = typeof window !== 'undefined' ? parseInt(localStorage.getItem('userId') || '0', 10) : 0;
+  const router = useRouter();
+
+  const idUtilisateurCourant =
+    typeof window !== 'undefined'
+      ? parseInt(localStorage.getItem('userId') || '0', 10)
+      : 0;
+
+  useEffect(() => {
+    const fetchMeta = async () => {
+      try {
+        const token = localStorage.getItem('token') || '';
+
+        const [gradesRes, catRes] = await Promise.all([
+          fetch('http://localhost:8000/api/grades', {
+            headers: { Authorization: `Bearer ${token}` },
+          }),
+          fetch('http://localhost:8000/api/categories', {
+            headers: { Authorization: `Bearer ${token}` },
+          }),
+        ]);
+
+        const gradesData = await gradesRes.json();
+        const categoriesData = await catRes.json();
+
+        setGrades(gradesData);
+        setCategories(categoriesData);
+      } catch (err) {
+        console.error('Erreur chargement des grades/catégories', err);
+      }
+    };
+
+    fetchMeta();
+  }, []);
 
   useEffect(() => {
     const fetchTournoisPublics = async () => {
@@ -50,8 +102,6 @@ export default function ProchainsTournois() {
         const token = localStorage.getItem('token') || '';
 
         const url = `http://localhost:8000/api/tournoisPublic/${userId}?${params.toString()}`;
-        console.log('URL avec paramètres :', url);
-
         const response = await fetch(url, {
           method: 'GET',
           headers: {
@@ -60,13 +110,8 @@ export default function ProchainsTournois() {
         });
 
         const data = await response.json();
-        console.log('Données reçues :', data);
-
-        // Assurez-vous que la réponse est un tableau avant de le définir
         if (Array.isArray(data)) {
           setTournois(data);
-        } else {
-          console.error('La réponse n\'est pas un tableau');
         }
       } catch (error) {
         console.error('Erreur lors du fetch des tournois publics :', error);
@@ -76,102 +121,134 @@ export default function ProchainsTournois() {
     fetchTournoisPublics();
   }, [hideInscrits, showNonInscrits, sortByDate, etat]);
 
-  const handleSelectTournoi = (tournoi: Tournoi | null) => {
-    setSelectedTournoi(tournoi);
-  };
+  const handleInscription = async () => {
+    try {
+      const token = localStorage.getItem('token') || '';
+      const tournoiId = selectedTournoi?.id;
+      if (!tournoiId) return;
 
-  const openModal = () => setIsModalOpen(true);
-  const closeModal = () => setIsModalOpen(false);
+      const userRes = await fetch(
+        'http://localhost:8000/api/getIDCompetiteurUtilisateur',
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+      const userData = await userRes.json();
+
+      if (!userData.id_competiteur) {
+        router.push(`/inscriptiontournois?id=${tournoiId}`);
+        return;
+      }
+
+      const insRes = await fetch(
+        'http://localhost:8000/api/inscrireAuTournoiDejaCompetiteur',
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            id_tournoi: tournoiId,
+            id_competiteur: userData.id_competiteur,
+          }),
+        }
+      );
+
+      const insData = await insRes.json();
+
+      if (insRes.ok) {
+        setMessage('✅ Inscription réussie au tournoi.');
+        setInscriptionDisabled(true);
+      } else {
+        setMessage(`❌ ${insData.message || "Erreur lors de l'inscription."}`);
+      }
+    } catch (err) {
+      console.error(err);
+      setMessage('❌ Une erreur est survenue. Veuillez réessayer.');
+    }
+  };
 
   const indexOfLastTournoi = currentPage * itemsPerPage;
   const indexOfFirstTournoi = indexOfLastTournoi - itemsPerPage;
-  
-  const currentTournois = Array.isArray(tournois) ? tournois.slice(indexOfFirstTournoi, indexOfLastTournoi) : [];
+  const currentTournois = tournois.slice(indexOfFirstTournoi, indexOfLastTournoi);
 
-  const paginate = (pageNumber: number) => setCurrentPage(pageNumber);
+  const getGradeName = (id?: number) => grades.find(g => g.id === id)?.nom ?? '-';
+  const getCategorieName = (id?: number) => categories.find(c => c.id === id)?.nom ?? '-';
 
   return (
-    <div className="container mt-3 z-0">
-      <h1 className="text-2xl font-semibold my-4">Prochains Tournois</h1>
+    <div className="container mt-6">
+      <div className="flex justify-between items-center mb-4">
+        <h1 className="text-3xl font-bold text-o-primary">Prochains Tournois</h1>
+      </div>
 
-      <ButtonPrimaryy className="mx-2">Filtrer</ButtonPrimaryy>
-
-      <Checkbox
-        label="Masquer les tournois où je suis inscrit"
-        checked={hideInscrits}
-        onChange={(e) => setHideInscrits(e.target.checked)}
+      <ProchainsTournoisTable
+        tournois={currentTournois}
+        onSelectTournoi={(tournoi) => {
+          setSelectedTournoi(tournoi);
+          setMessage(null);
+          setInscriptionDisabled(false);
+        }}
+        idUtilisateurCourant={idUtilisateurCourant}
+        hideInscrits={hideInscrits}
+        showNonInscrits={showNonInscrits}
+        sortByDate={sortByDate}
+        etatGlobal={etat}
+        setHideInscrits={setHideInscrits}
+        setShowNonInscrits={setShowNonInscrits}
+        setSortByDate={setSortByDate}
+        setEtatGlobal={setEtat}
+        grades={grades}
+        categories={categories}
       />
-      <Checkbox
-        label="Afficher les tournois sans mon inscription"
-        checked={showNonInscrits}
-        onChange={(e) => setShowNonInscrits(e.target.checked)}
-      />
-
-      <select onChange={(e) => setSortByDate(e.target.value)} value={sortByDate || ''}>
-        <option value="">Trier par date</option>
-        <option value="asc">Croissant</option>
-        <option value="desc">Décroissant</option>
-      </select>
-
-      <select onChange={(e) => setEtat(e.target.value)} value={etat || ''}>
-        <option value="">Trier par statut</option>
-        <option value="en_attente">En attente</option>
-        <option value="en_cours">En cours</option>
-        <option value="termine">Terminé</option>
-      </select>
 
       {selectedTournoi && (
-        <div className="d-flex justify-end mb-4">
-          <ButtonPrimaryy className="mx-2">S'inscrire au tournoi</ButtonPrimaryy>
-          <ButtonSecondaryy onClick={openModal}>Voir les détails</ButtonSecondaryy>
+        <div className="flex flex-col sm:flex-row justify-end gap-3 my-4">
+          <ButtonPrimaryy onClick={handleInscription} disabled={inscriptionDisabled}>
+            {inscriptionDisabled ? 'Déjà inscrit' : "S'inscrire au tournoi"}
+          </ButtonPrimaryy>
+          <ButtonSecondaryy onClick={() => setIsModalOpen(true)}>
+            Détails
+          </ButtonSecondaryy>
+          {message && (
+            <div className="text-sm text-o-primary font-semibold mt-2">
+              {message}
+            </div>
+          )}
         </div>
       )}
 
-      {!isModalOpen && (
-        <ProchainsTournoisTable
-          tournois={currentTournois}
-          onSelectTournoi={handleSelectTournoi}
-          idUtilisateurCourant={idUtilisateurCourant}
-        />
-      )}
-
-      <div className="pagination">
+      <div className="flex justify-center space-x-2 mt-6">
         {Array.from({ length: Math.ceil(tournois.length / itemsPerPage) }, (_, index) => (
           <ButtonPrimaryy
-            key={index + 1}
-            onClick={() => paginate(index + 1)}
-            className={`pagination-button ${currentPage === index + 1 ? 'active' : ''}`}
+            key={index}
+            onClick={() => setCurrentPage(index + 1)}
+            className={currentPage === index + 1 ? 'font-bold' : ''}
           >
             {index + 1}
           </ButtonPrimaryy>
         ))}
       </div>
 
-      <LaModal opened={isModalOpen} onClose={closeModal} title="Détails du Tournoi" tournoi={selectedTournoi}>
+      <LaModal
+        opened={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        title="Détails du Tournoi"
+        tournoi={selectedTournoi}
+      >
         {selectedTournoi && (
-          <div className="text-o-primary tournament-details-grid grid grid-cols-2 gap-2 text-sm">
-            <div className="font-semibold">🏆 Nom :</div>
-            <div>{selectedTournoi.nom}</div>
-            <div className="font-semibold">📅 Date :</div>
-            <div>{selectedTournoi.date}</div>
-            <div className="font-semibold">📍 Lieu :</div>
-            <div>{selectedTournoi.lieu}</div>
-            <div className="font-semibold">🎯 Élimination :</div>
-            <div>{getSystemeLabel(selectedTournoi.systemeElimination)}</div>
-            <div className="font-semibold">📁 Catégorie :</div>
-            <div>{selectedTournoi.id_categorie ?? '-'}</div>
-            <div className="font-semibold">🥋 Grade Min :</div>
-            <div>{selectedTournoi.id_grade_min ?? '-'}</div>
-            <div className="font-semibold">🥋 Grade Max :</div>
-            <div>{selectedTournoi.id_grade_max ?? '-'}</div>
-            <div className="font-semibold">👥 Participants :</div>
-            <div>{selectedTournoi.nombre_participants ?? 0}</div>
-            <div className="font-semibold">📊 Poules :</div>
-            <div>{selectedTournoi.nombre_poules ?? '-'}</div>
-            <div className="font-semibold">⏱ État :</div>
-            <div>{getEtatLabel(selectedTournoi.etat)}</div>
-            <div className="font-semibold">🔓 Public :</div>
-            <div>{selectedTournoi.is_public ? 'Oui' : 'Non'}</div>
+          <div className="mt-4">
+            <Info label="Nom" value={selectedTournoi.nom} />
+            <Info label="Date" value={selectedTournoi.date} />
+            <Info label="Lieu" value={selectedTournoi.lieu} />
+            <Info label="Système" value={getSystemeLabel(selectedTournoi.systemeElimination)} />
+            <Info label="Catégorie" value={getCategorieName(selectedTournoi.id_categorie)} />
+            <Info label="Grade Min" value={getGradeName(selectedTournoi.id_grade_min)} />
+            <Info label="Grade Max" value={getGradeName(selectedTournoi.id_grade_max)} />
+            <Info label="Participants" value={selectedTournoi.nombre_participants?.toString()} />
+            <Info label="Poules" value={selectedTournoi.nombre_poules?.toString()} />
+            <Info label="État" value={getEtatLabel(selectedTournoi.etat)} />
+            <Info label="Public" value={selectedTournoi.is_public ? 'Oui' : 'Non'} />
           </div>
         )}
       </LaModal>
@@ -179,25 +256,29 @@ export default function ProchainsTournois() {
   );
 }
 
+const Info = ({ label, value }: { label: string; value?: string }) => {
+  if (!value) return null;
+  return (
+    <div style={{ display: 'flex', marginBottom: '8px' }}>
+      <div style={{ width: '140px', fontWeight: 600, color: '#023047' }}>{label}</div>
+      <div style={{ color: '#023047' }}>{value}</div>
+    </div>
+  );
+};
+
 const getEtatLabel = (etat?: string) => {
   switch (etat) {
-    case 'en_attente':
-      return 'En attente';
-    case 'en_cours':
-      return 'En cours';
-    case 'termine':
-      return 'Terminé';
-    default:
-      return '-';
+    case 'en_attente': return 'En attente';
+    case 'en_cours': return 'En cours';
+    case 'termine': return 'Terminé';
+    default: return '-';
   }
 };
+
 const getSystemeLabel = (code?: string) => {
   switch (code) {
-    case 'S':
-      return 'Élimination simple';
-    case 'D':
-      return 'Élimination double';
-    default:
-      return '-';
+    case 'S': return 'Élimination simple';
+    case 'D': return 'Élimination double';
+    default: return '-';
   }
 };

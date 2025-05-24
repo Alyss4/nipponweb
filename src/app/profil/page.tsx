@@ -1,103 +1,217 @@
 'use client';
 
-import React, { useEffect, useState, ChangeEvent } from 'react';
-import { Input, Checkbox, ButtonPrimaryy, Select, ButtonSecondaryy } from '../../components/componentsUI/ComponentForm';
+import { useEffect, useState } from 'react';
+import { Input, Select, ButtonPrimaryy, ButtonSecondaryy } from '@/components/ui/ComponentForm';
 import { useRouter } from 'next/navigation';
 
 export default function ProfilPage() {
-  const [nom, setNom] = useState('');
+  const router = useRouter();
+  const [editMode, setEditMode] = useState(false);
+  const [role, setRole] = useState('');
+  const [userId, setUserId] = useState<number | null>(null);
+
+  // Utilisateur
   const [email, setEmail] = useState('');
   const [motDePasse, setMotDePasse] = useState('');
+  const [confirmMdp, setConfirmMdp] = useState('');
+
+  // Compétiteur
+  const [prenom, setPrenom] = useState('');
+  const [nom, setNom] = useState('');
+  const [dateNaissance, setDateNaissance] = useState('');
+  const [sexe, setSexe] = useState('');
+  const [poids, setPoids] = useState('');
+  const [idPays, setIdPays] = useState('');
+  const [idClub, setIdClub] = useState('');
+  const [idGrade, setIdGrade] = useState('');
+
+  const [paysList, setPaysList] = useState<any[]>([]);
+  const [clubList, setClubList] = useState<any[]>([]);
+  const [gradeList, setGradeList] = useState<any[]>([]);
+
   const [message, setMessage] = useState('');
   const [erreur, setErreur] = useState('');
 
-  const router = useRouter();
-
   useEffect(() => {
     const token = localStorage.getItem('token');
+    const storedRole = localStorage.getItem('role');
+    setRole(storedRole || '');
+
     if (!token) {
       router.push('/connexion');
       return;
     }
 
-    fetch('http://127.0.0.1:8000/api/profil', {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
+    fetch('http://localhost:8000/api/user', {
+      headers: { Authorization: `Bearer ${token}` },
     })
-      .then((res) => res.json())
-      .then((data) => {
-        if (data.utilisateur) {
-          setNom(data.utilisateur.nom);
-          setEmail(data.utilisateur.email);
-        }
-      })
-      .catch((err) => {
-        console.error(err);
-        setErreur("Impossible de charger le profil.");
+      .then(res => res.json())
+      .then(data => {
+        setEmail(data.email);
+        setUserId(data.id);
       });
+
+    if (storedRole === 'c') {
+      fetch('http://localhost:8000/api/getIDCompetiteurUtilisateur', {
+        headers: { Authorization: `Bearer ${token}` },
+      })
+        .then(res => res.json())
+        .then(({ id }) => {
+          return fetch('http://localhost:8000/api/getCompetiteurById', {
+            method: 'POST',
+            headers: {
+              Authorization: `Bearer ${token}`,
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ id }),
+          });
+        })
+        .then(res => res.json())
+        .then(data => {
+          const c = data.competiteur;
+          setPrenom(c.prenom);
+          setNom(c.nom);
+          setDateNaissance(c.date_naissance);
+          setSexe(c.sexe);
+          setPoids(c.poids);
+          setIdPays(c.id_pays?.toString() || '');
+          setIdClub(c.id_club?.toString() || '');
+          setIdGrade(c.id_grade?.toString() || '');
+        });
+    }
+
+    const fetchSelectData = async () => {
+      const headers = { Authorization: `Bearer ${token}` };
+      const [paysRes, clubsRes, gradesRes] = await Promise.all([
+        fetch('http://localhost:8000/api/pays', { headers }),
+        fetch('http://localhost:8000/api/clubs', { headers }),
+        fetch('http://localhost:8000/api/grades', { headers }),
+      ]);
+      setPaysList(await paysRes.json());
+      setClubList(await clubsRes.json());
+      setGradeList(await gradesRes.json());
+    };
+
+    fetchSelectData();
   }, [router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    if (motDePasse && motDePasse !== confirmMdp) {
+      setErreur('Les mots de passe ne correspondent pas.');
+      return;
+    }
+
     const token = localStorage.getItem('token');
-    if (!token) return;
+    if (!token || !userId) return;
+
+    const payload: any = {
+      email,
+      motDePasse: motDePasse || undefined,
+    };
+
+    if (role === 'c') {
+      payload.competiteur = {
+        prenom,
+        nom,
+        date_naissance: dateNaissance,
+        sexe,
+        poids,
+        id_pays: idPays,
+        id_club: idClub,
+        id_grade: idGrade,
+      };
+    }
 
     try {
-      const response = await fetch('http://127.0.0.1:8000/api/profil/update', {
+      const res = await fetch('http://localhost:8000/api/profil/update', {
         method: 'PUT',
         headers: {
-          'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ nom, email, motDePasse }),
+        body: JSON.stringify(payload),
       });
 
-      const data = await response.json();
-
-      if (response.ok) {
-        setMessage('Profil mis à jour avec succès.');
+      const data = await res.json();
+      if (res.ok) {
+        setMessage('Profil mis à jour.');
         setErreur('');
+        setEditMode(false);
       } else {
         setErreur(data.message || 'Erreur lors de la mise à jour.');
         setMessage('');
       }
-    } catch (error) {
-      console.error(error);
-      setErreur("Erreur de communication avec le serveur.");
+    } catch (err) {
+      setErreur('Erreur réseau.');
     }
   };
 
   return (
-    <div className="container" style={{ maxWidth: '500px', marginTop: '50px' }}>
-      <h2 className="text-center text-primary mb-4">Mon profil</h2>
-      <form onSubmit={handleSubmit}>
-        <Input
-          label="Nom"
-          type="text"
-          placeholder="Votre nom complet"
-          value={nom}
-          onChange={(e) => setNom(e.target.value)}
-          required={true}
-        />
-        <Input
-          label="Email"
-          type="email"
-          placeholder="Votre adresse email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          required={true}
-        />
+    <div className="container" style={{ maxWidth: '900px', marginTop: '50px' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <h2 className="mb-4 text-primary">Mon profil</h2>
+      </div>
 
-        {message && <p className="text-success">{message}</p>}
-        {erreur && <p className="text-danger">{erreur}</p>}
+      <form onSubmit={handleSubmit} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+        <Input label="Email" type="email" value={email} onChange={e => setEmail(e.target.value)} disabled={!editMode} required />
+        <br/>
+        <Input label="Nouveau mot de passe" type="password" value={motDePasse} onChange={e => setMotDePasse(e.target.value)} disabled={!editMode} />
+        <Input label="Confirmer mot de passe" type="password" value={confirmMdp} onChange={e => setConfirmMdp(e.target.value)} disabled={!editMode} />
+        {role === 'c' && (
+          <>
+            <Input label="Prénom" type="text" value={prenom} onChange={e => setPrenom(e.target.value)} disabled={!editMode} required />
+            <Input label="Nom" type="text" value={nom} onChange={e => setNom(e.target.value)} disabled={!editMode} required />
+            <Input label="Date de naissance" type="date" value={dateNaissance} onChange={e => setDateNaissance(e.target.value)} disabled={!editMode} required />
+            <Select
+              label="Sexe"
+              value={sexe}
+              onChange={e => setSexe(e.target.value)}
+              disabled={!editMode}
+              options={[
+                { value: 'M', label: 'Homme' },
+                { value: 'F', label: 'Femme' },
+              ]}
+              required
+            />
+            <Input label="Poids (kg)" type="number" value={poids} onChange={e => setPoids(e.target.value)} disabled={!editMode} required />
+            <Select
+              label="Pays"
+              value={idPays}
+              onChange={e => setIdPays(e.target.value)}
+              options={paysList.map((p: any) => ({ value: p.id.toString(), label: p.nom }))}
+              disabled={!editMode}
+              required
+            />
+            <Select
+              label="Club"
+              value={idClub}
+              onChange={e => setIdClub(e.target.value)}
+              options={clubList.map((c: any) => ({ value: c.id.toString(), label: c.nom }))}
+              disabled={!editMode}
+              required
+            />
+            <Select
+              label="Grade"
+              value={idGrade}
+              onChange={e => setIdGrade(e.target.value)}
+              options={gradeList.map((g: any) => ({ value: g.id.toString(), label: g.nom }))}
+              disabled={!editMode}
+              required
+            />
+          </>
+        )}
 
-        <div className="d-grid gap-2 mt-3">
-          <ButtonPrimaryy>Mettre à jour</ButtonPrimaryy>
-          <div onClick={() => router.push('/')}>
-            <ButtonSecondaryy>Retour</ButtonSecondaryy>
-          </div>
+        {message && <p className="text-success" style={{ gridColumn: '1 / -1' }}>{message}</p>}
+        {erreur && <p className="text-danger" style={{ gridColumn: '1 / -1' }}>{erreur}</p>}
+
+        <div style={{ gridColumn: '1 / -1', display: 'flex', justifyContent: 'flex-end', gap: '12px', marginTop: '24px' }}>
+          {!editMode && (
+          <ButtonPrimaryy onClick={() => setEditMode(true)}>Modifier</ButtonPrimaryy>
+          )}
+          <ButtonSecondaryy type="button" onClick={() => router.push('/')}>Retour</ButtonSecondaryy>  
+          {editMode && <ButtonPrimaryy type="submit">Mettre à jour</ButtonPrimaryy>}
         </div>
       </form>
     </div>

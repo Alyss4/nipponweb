@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import Button, { ButtonStyles } from '../components/componentsUI/AccueilButton';
+import Button, { ButtonStyles } from '../components/ui/AccueilButton';
 import {
   FaUserPlus, FaTrophy, 
   FaUsersCog, FaUserCircle, 
@@ -50,7 +50,7 @@ export default function Dashboard() {
           <>
             <Button icon={FaUsersCog} label="Gérer Utilisateurs" href="/roles"/>
             <Button icon={FaUserPlus} label="Créer Tournoi" onClick={handleCreateTournoi} />
-            <Button icon={FaTrophy} label="Voir Tournoi" href="" />
+            <Button icon={FaTrophy} label="Voir Tournoi" href="/lancertournoi" />
 
           </>
         );
@@ -59,7 +59,7 @@ export default function Dashboard() {
           <>
             <Button icon={FaLayerGroup} label="Créer Catégories" href="/categorie" />
             <Button icon={FaUserPlus} label="Créer Tournoi" onClick={handleCreateTournoi} />
-            <Button icon={FaTrophy} label="Lancer un tournoi" href="/gestionparticipants" />
+            <Button icon={FaTrophy} label="Lancer un tournoi" href="/lancertournoi" />
             <Button icon={FaUserCircle} label="Mon Profil" href="/profil" />
           </>
         );

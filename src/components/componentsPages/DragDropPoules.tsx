@@ -77,31 +77,34 @@ export default function DragDropPoules({ poules, setPoules, competiteurs }: Drag
   };
 
   return (
-    <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-      <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mt-4">
+<DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+  <div className="drag-drop-layout">
+    {/* Non assignés */}
+    <div className="non-assignes-box">
+      <h3 className="font-bold mb-2">Non assignés</h3>
+      <DroppableZone id="-1">
+        <SortableContext
+          items={unassigned.map(c => `-1:${c.id}`)}
+          strategy={verticalListSortingStrategy}
+        >
+          {unassigned.map(competiteur => (
+            <DraggableCompetiteur
+              key={`-1:${competiteur.id}`}
+              id={`-1:${competiteur.id}`}
+              nom={competiteur.nom}
+              prenom={competiteur.prenom}
+            />
+          ))}
+        </SortableContext>
+      </DroppableZone>
+    </div>
 
-        {/* Zone des non assignés */}
-        <DroppableZone id="-1">
-          <h3 className="font-bold mb-2">Non assignés</h3>
-          <SortableContext
-            items={unassigned.map(c => `-1:${c.id}`)}
-            strategy={verticalListSortingStrategy}
-          >
-            {unassigned.map(competiteur => (
-              <DraggableCompetiteur
-                key={`-1:${competiteur.id}`}
-                id={`-1:${competiteur.id}`}
-                nom={competiteur.nom}
-                prenom={competiteur.prenom}
-              />
-            ))}
-          </SortableContext>
-        </DroppableZone>
-
-        {/* Les poules */}
-        {poules.map((poule, pouleIndex) => (
-          <DroppableZone key={poule.id} id={`${pouleIndex}`}>
-            <h3 className="font-bold mb-2">Poule {pouleIndex + 1}</h3>
+    {/* Poules */}
+    <div className="poules-zone">
+      {poules.map((poule, pouleIndex) => (
+        <div className="poule-box" key={poule.id}>
+          <h3 className="font-bold mb-2">Poule {pouleIndex + 1}</h3>
+          <DroppableZone id={`${pouleIndex}`}>
             <SortableContext
               items={poule.competiteurs.map(c => `${pouleIndex}:${c.id}`)}
               strategy={verticalListSortingStrategy}
@@ -116,8 +119,11 @@ export default function DragDropPoules({ poules, setPoules, competiteurs }: Drag
               ))}
             </SortableContext>
           </DroppableZone>
-        ))}
-      </div>
-    </DndContext>
+        </div>
+      ))}
+    </div>
+  </div>
+</DndContext>
+
   );
 }

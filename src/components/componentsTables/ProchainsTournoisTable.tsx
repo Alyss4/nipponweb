@@ -1,6 +1,6 @@
-'use client'
+'use client';
 import React, { useState } from 'react';
-import { Checkbox } from '../../components/componentsUI/ComponentForm';
+import { Checkbox, Select } from '../ui/ComponentForm';
 
 interface Tournoi {
   id: number;
@@ -25,16 +25,38 @@ interface ProchainsTournoisTableProps {
   tournois: Tournoi[];
   onSelectTournoi: (tournoi: Tournoi | null) => void;
   idUtilisateurCourant: number;
+  hideInscrits: boolean;
+  showNonInscrits: boolean;
+  sortByDate: string | null;
+  etatGlobal: string | null;
+  setHideInscrits: (v: boolean) => void;
+  setShowNonInscrits: (v: boolean) => void;
+  setSortByDate: (v: string) => void;
+  setEtatGlobal: (v: string) => void;
+  grades: { id: number; nom: string }[];
+  categories: { id: number; nom: string }[];
 }
 
 const ProchainsTournoisTable: React.FC<ProchainsTournoisTableProps> = ({
   tournois,
   onSelectTournoi,
+  idUtilisateurCourant,
+  hideInscrits,
+  showNonInscrits,
+  sortByDate,
+  etatGlobal,
+  setHideInscrits,
+  setShowNonInscrits,
+  setSortByDate,
+  setEtatGlobal,
+  grades,
+  categories
 }) => {
   const [selectedTournoiId, setSelectedTournoiId] = useState<number | null>(null);
   const [etatFilter, setEtatFilter] = useState('');
   const [systemeFilter, setSystemeFilter] = useState('');
   const [publicFilter, setPublicFilter] = useState('');
+  const [afficherFiltres, setAfficherFiltres] = useState(true);
 
   const handleCheckboxChange = (id: number) => {
     if (selectedTournoiId === id) {
@@ -56,38 +78,88 @@ const ProchainsTournoisTable: React.FC<ProchainsTournoisTableProps> = ({
 
   return (
     <div>
-      <div className="flex flex-wrap gap-4 mb-4">
-        <select
-          value={etatFilter}
-          onChange={e => setEtatFilter(e.target.value)}
-          className="border p-2 rounded"
-        >
-          <option value="">Tous les états</option>
-          <option value="en_attente">En attente</option>
-          <option value="en_cours">En cours</option>
-          <option value="termine">Terminé</option>
-        </select>
-
-        <select
-          value={systemeFilter}
-          onChange={e => setSystemeFilter(e.target.value)}
-          className="border p-2 rounded"
-        >
-          <option value="">Tous les systèmes</option>
-          <option value="S">Élimination simple</option>
-          <option value="D">Élimination double</option>
-        </select>
-
-        <select
-          value={publicFilter}
-          onChange={e => setPublicFilter(e.target.value)}
-          className="border p-2 rounded"
-        >
-          <option value="">Tous</option>
-          <option value="true">Public</option>
-          <option value="false">Privé</option>
-        </select>
+      <div style={{ marginBottom: '16px' }}>
+        <Checkbox
+          label="Afficher les filtres"
+          checked={afficherFiltres}
+          onChange={(e) => setAfficherFiltres(e.target.checked)}
+        />
       </div>
+
+      {afficherFiltres && (
+        <div style={{
+          display: 'flex',
+          flexWrap: 'wrap',
+          gap: '16px',
+          alignItems: 'flex-end',
+          marginBottom: '16px',
+        }}>
+          <Select
+            label="État"
+            value={etatFilter}
+            onChange={(e) => setEtatFilter(e.target.value)}
+            options={[
+              { value: '', label: 'Tous les états' },
+              { value: 'en_attente', label: 'En attente' },
+              { value: 'en_cours', label: 'En cours' },
+              { value: 'termine', label: 'Terminé' },
+            ]}
+          />
+          <Select
+            label="Système"
+            value={systemeFilter}
+            onChange={(e) => setSystemeFilter(e.target.value)}
+            options={[
+              { value: '', label: 'Tous les systèmes' },
+              { value: 'S', label: 'Élimination simple' },
+              { value: 'D', label: 'Élimination double' },
+            ]}
+          />
+          <Select
+            label="Accès"
+            value={publicFilter}
+            onChange={(e) => setPublicFilter(e.target.value)}
+            options={[
+              { value: '', label: 'Tous' },
+              { value: 'true', label: 'Public' },
+              { value: 'false', label: 'Privé' },
+            ]}
+          />
+          <Select
+            label="Trier par date"
+            value={sortByDate || ''}
+            onChange={(e) => setSortByDate(e.target.value)}
+            options={[
+              { value: '', label: 'Trier par date' },
+              { value: 'asc', label: 'Croissant' },
+              { value: 'desc', label: 'Décroissant' },
+            ]}
+          />
+          <Select
+            label="Filtrer par statut"
+            value={etatGlobal || ''}
+            onChange={(e) => setEtatGlobal(e.target.value)}
+            options={[
+              { value: '', label: 'Tous les statuts' },
+              { value: 'en_attente', label: 'En attente' },
+              { value: 'en_cours', label: 'En cours' },
+              { value: 'termine', label: 'Terminé' },
+            ]}
+          />
+          <div>
+            <Checkbox
+              label="Masquer les tournois où je suis inscrit"
+              checked={hideInscrits}
+              onChange={(e) => setHideInscrits(e.target.checked)}
+            />
+            <Checkbox
+              label="Afficher les tournois sans mon inscription"
+              checked={showNonInscrits}
+              onChange={(e) => setShowNonInscrits(e.target.checked)}
+            />
+          </div>
+        </div>
+      )}
 
       <div className="overflow-x-auto">
         <table className="min-w-full text-o-primary bg-white border border-gray-300 text-sm">
@@ -124,9 +196,16 @@ const ProchainsTournoisTable: React.FC<ProchainsTournoisTableProps> = ({
                 <td className="p-2 border">{t.date || '-'}</td>
                 <td className="p-2 border">{t.lieu || '-'}</td>
                 <td className="p-2 border">{getSystemeLabel(t.systemeElimination)}</td>
-                <td className="p-2 border">{t.id_categorie ?? '-'}</td>
-                <td className="p-2 border">{t.id_grade_min ?? '-'}</td>
-                <td className="p-2 border">{t.id_grade_max ?? '-'}</td>
+                <td className="p-2 border">
+                  {t.id_categorie} — {categories.find(c => c.id === t.id_categorie)?.nom ?? '⚠️ Non trouvé'}
+                </td>
+
+                <td className="p-2 border">
+                  {grades.find(g => g.id === t.id_grade_min)?.nom ?? '-'}
+                </td>
+                <td className="p-2 border">
+                  {grades.find(g => g.id === t.id_grade_max)?.nom ?? '-'}
+                </td>
                 <td className="p-2 border">{t.nombre_participants ?? 0}</td>
                 <td className="p-2 border">{t.nombre_poules ?? '-'}</td>
                 <td className="p-2 border">{getEtatLabel(t.etat)}</td>
@@ -139,6 +218,7 @@ const ProchainsTournoisTable: React.FC<ProchainsTournoisTableProps> = ({
     </div>
   );
 };
+
 const getEtatLabel = (etat?: string) => {
   switch (etat) {
     case 'en_attente':
@@ -152,15 +232,24 @@ const getEtatLabel = (etat?: string) => {
   }
 };
 
-const getSystemeLabel = (code?: string) => {
-  switch (code) {
-    case 'S':
-      return 'Élimination simple';
-    case 'D':
-      return 'Élimination double';
+const getSystemeLabel = (value?: string) => {
+  switch (value?.toLowerCase()) {
+    case 'poule':
+      return 'Poules';
+    case 'elimination directe':
+      return 'Élimination directe';
+    case 'double elimination':
+      return 'Double élimination';
+    case 'tableau final':
+      return 'Tableau final';
+    case 'round robin':
+      return 'Round Robin';
+    case 'système suisse':
+      return 'Système suisse';
     default:
-      return '-';
+      return value ?? '-';
   }
 };
+
 
 export default ProchainsTournoisTable;

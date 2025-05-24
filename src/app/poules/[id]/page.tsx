@@ -1,6 +1,7 @@
-'use client';
+"use client";
+
 import { useParams } from 'next/navigation';
-import { Select } from '@/components/componentsUI/ComponentForm';
+import { Select, Input, ButtonPrimaryy, ButtonSecondaryy } from '@/components/ui/ComponentForm';
 import { useEffect, useState } from 'react';
 import DragDropPoules from '@/components/componentsPages/DragDropPoules';
 import { useRouter } from 'next/navigation';
@@ -16,13 +17,21 @@ interface Poule {
   competiteurs: Competiteur[];
 }
 
+interface Match {
+  joueur1: Competiteur | null;
+  joueur2: Competiteur | null;
+}
+
 export default function Poules() {
   const params = useParams();
   const tournoiId = params.id;
   const [modeGestion, setModeGestion] = useState<'automatique' | 'manuelle' | ''>('');
   const [competiteurs, setCompetiteurs] = useState<Competiteur[]>([]);
   const [poules, setPoules] = useState<Poule[]>([]);
+  const [matchs, setMatchs] = useState<Match[]>([]);
+  const [nombrePoulesInput, setNombrePoulesInput] = useState<string>('1');
   const router = useRouter();
+  const [tournoi, setTournoi] = useState<{ systemeElimination?: string }>({});
 
   const options = [
     { value: '', label: '-- Choisir un mode --' },
@@ -40,121 +49,167 @@ export default function Poules() {
             Authorization: `Bearer ${token}`,
           },
         });
-
-        if (!response.ok) {
-          throw new Error("Erreur lors de la récupération des compétiteurs");
-        }
-
+        if (!response.ok) throw new Error("Erreur lors de la récupération des compétiteurs");
         const data = await response.json();
         setCompetiteurs(data);
       } catch (error) {
         console.error("Erreur :", error);
       }
     };
-
     if (modeGestion && tournoiId) {
       fetchCompetiteurs();
     }
   }, [modeGestion, tournoiId]);
 
   useEffect(() => {
-    if (modeGestion === 'manuelle' && competiteurs.length > 0 && poules.length === 0) {
-      const nombrePoules = Math.ceil(competiteurs.length / 4);
+    const nombrePoules = parseInt(nombrePoulesInput) || 1;
+    if (modeGestion === 'manuelle' && competiteurs.length > 0) {
       const poulesVides: Poule[] = Array.from({ length: nombrePoules }, (_, i) => ({
         id: i + 1,
-        competiteurs: [],
+        competiteurs: poules[i]?.competiteurs || [],
       }));
       setPoules(poulesVides);
     }
-  }, [modeGestion, competiteurs, poules]);
+  }, [modeGestion, competiteurs, nombrePoulesInput]);
+
+  useEffect(() => {
+    const fetchTournoi = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        const response = await fetch(`http://localhost:8000/api/tournois/${tournoiId}`, {
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        if (!response.ok) throw new Error("Erreur lors de la récupération du tournoi");
+        const data = await response.json();
+        setTournoi(data);
+      } catch (error) {
+        console.error("Erreur tournoi:", error);
+      }
+    };
+    if (tournoiId) {
+      fetchTournoi();
+    }
+  }, [tournoiId]);
 
   const shuffleArray = <T,>(array: T[]): T[] => {
     return [...array].sort(() => Math.random() - 0.5);
   };
 
+  const generateEliminationDirecte = () => {
+    const shuffled = shuffleArray(competiteurs);
+    const total = shuffled.length;
+    const nextPowerOf2 = Math.pow(2, Math.ceil(Math.log2(total)));
+    const byes = nextPowerOf2 - total;
+    const extended = [...shuffled, ...Array(byes).fill(null)];
+    const firstRound: Match[] = [];
+    for (let i = 0; i < extended.length; i += 2) {
+      firstRound.push({
+        joueur1: extended[i] || null,
+        joueur2: extended[i + 1] || null,
+      });
+    }
+    setPoules([{ id: 1, competiteurs: shuffled }]);
+    setMatchs(firstRound);
+  };
+
   const generatePoules = () => {
+    if (!tournoi.systemeElimination) {
+      alert("Aucun système d’élimination défini pour ce tournoi.");
+      return;
+    }
     const competiteursShuffled = shuffleArray(competiteurs);
-    const total = competiteursShuffled.length;
-    let nombrePoules = Math.ceil(total / 4);
-    if (total / nombrePoules > 5) nombrePoules += 1;
+    const nombrePoules = parseInt(nombrePoulesInput) || 1;
 
-    const poulesTemp: Poule[] = Array.from({ length: nombrePoules }, (_, index) => ({
-      id: index + 1,
-      competiteurs: [],
-    }));
-
-    competiteursShuffled.forEach((competiteur, index) => {
-      poulesTemp[index % nombrePoules].competiteurs.push(competiteur);
-    });
-
-    setPoules(poulesTemp);
-  };
-
-  const handlePouleRemove = (competiteurId: number, pouleIndex: number) => {
-    setPoules((prevPoules) => {
-      const newPoules = [...prevPoules];
-      newPoules[pouleIndex].competiteurs = newPoules[pouleIndex].competiteurs.filter(
-        (c) => c.id !== competiteurId
-      );
-      return newPoules;
-    });
-  };
-
-  const handleResetPoules = () => {
-    setPoules([]);
-  };
-
-  const handleExportPoulesCSV = () => {
-    let csvContent = "data:text/csv;charset=utf-8,";
-    csvContent += "Poule,ID,Nom,Prénom\n";
-
-    poules.forEach((poule) => {
-      poule.competiteurs.forEach((competiteur) => {
-        csvContent += `Poule ${poule.id},${competiteur.id},${competiteur.nom},${competiteur.prenom}\n`;
-      });
-    });
-
-    const encodedUri = encodeURI(csvContent);
-    const link = document.createElement("a");
-    link.setAttribute("href", encodedUri);
-    link.setAttribute("download", `poules-tournoi-${tournoiId}.csv`);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  };
-
-    const handleSavePoules = async () => {
-    try {
-      const token = localStorage.getItem('token');
-      const response = await fetch(`http://localhost:8000/api/tournois/${tournoiId}/poules`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          poules: poules.map((p, index) => ({
-            numero: index + 1,
-            competiteurs: p.competiteurs.map(c => ({ id: c.id })),
-          })),
-        }),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        console.error("Erreur API :", errorData);
-        alert("Erreur lors de l'enregistrement des poules.");
-        return;
+    switch (tournoi.systemeElimination) {
+      case 'Poule': {
+        const poulesPoule: Poule[] = Array.from({ length: nombrePoules }, (_, index) => ({
+          id: index + 1,
+          competiteurs: [],
+        }));
+        competiteursShuffled.forEach((competiteur, index) => {
+          poulesPoule[index % nombrePoules].competiteurs.push(competiteur);
+        });
+        setPoules(poulesPoule);
+        setMatchs([]);
+        break;
       }
-
-      alert("Poules enregistrées avec succès !");
-      router.push(`/poules/${tournoiId}/matchs`);
-    } catch (error) {
-      console.error("Erreur réseau :", error);
-      alert("Erreur de communication avec le serveur.");
+      case 'Elimination directe': {
+        generateEliminationDirecte();
+        break;
+      }
+      case 'Round robin': {
+        const pouleUnique: Poule[] = [{
+          id: 1,
+          competiteurs: competiteursShuffled,
+        }];
+        setPoules(pouleUnique);
+        const matchsRR: Match[] = [];
+        for (let i = 0; i < competiteursShuffled.length; i++) {
+          for (let j = i + 1; j < competiteursShuffled.length; j++) {
+            matchsRR.push({
+              joueur1: competiteursShuffled[i],
+              joueur2: competiteursShuffled[j],
+            });
+          }
+        }
+        setMatchs(matchsRR);
+        break;
+      }
+      case 'Double elimination':
+      case 'Tableau final': {
+        const uniquePoule: Poule[] = [{
+          id: 1,
+          competiteurs: competiteursShuffled,
+        }];
+        setPoules(uniquePoule);
+        setMatchs([]);
+        break;
+      }
+      case 'Système suisse': {
+        alert("Le système suisse nécessite une logique d’appariement spécifique. À implémenter.");
+        setPoules([]);
+        setMatchs([]);
+        break;
+      }
+      default:
+        alert("Système d’élimination non reconnu.");
+        break;
     }
   };
+const handleSavePoules = async () => {
+  try {
+    const token = localStorage.getItem('token');
+    const response = await fetch(`http://localhost:8000/api/tournois/${tournoiId}/poules`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({
+        poules: poules.map((p, index) => ({
+          numero: index + 1,
+          competiteurs: p.competiteurs.map(c => ({ id: c.id })),
+        })),
+      }),
+    });
 
+    if (!response.ok) {
+      const errorData = await response.json();
+      console.error("Erreur API :", errorData);
+      alert("Erreur lors de l'enregistrement des poules.");
+      return;
+    }
+
+    alert("Poules enregistrées avec succès !");
+    router.push(`/poules/${tournoiId}/matchs`);
+  } catch (error) {
+    console.error("Erreur réseau :", error);
+    alert("Erreur de communication avec le serveur.");
+  }
+};
 
   return (
     <div className="text-o-primary p-5">
@@ -162,113 +217,80 @@ export default function Poules() {
         Création des Poules pour le tournoi #{tournoiId}
       </h1>
 
-      <p className="mb-2">Veuillez sélectionner le mode de gestion des poules :</p>
       <Select
         label=""
         value={modeGestion}
         onChange={(e) => {
           setModeGestion(e.target.value as 'automatique' | 'manuelle');
           setPoules([]);
+          setMatchs([]);
         }}
         options={options}
       />
 
-      {modeGestion === 'automatique' && (
-        <div className="mt-4">
-          <p>Vous avez choisi la <strong>gestion automatique</strong> des poules.</p>
-          <p className="mt-2">Nombre de compétiteurs : {competiteurs.length}</p>
-          <button onClick={generatePoules} className="mt-4 p-2 bg-blue-500 text-white rounded">
-            Générer les Poules
-          </button>
+      <Input
+        label="Nombre de poules"
+        type="number"
+        placeholder="Ex: 4"
+        value={nombrePoulesInput}
+        onChange={(e) => setNombrePoulesInput(e.target.value)}
+      />
 
-          <div className="flex gap-2 mt-4">
-            <button onClick={handleResetPoules} className="p-2 bg-yellow-500 text-white rounded">
-              Réinitialiser les Poules
-            </button>
-            {poules.length > 0 && (
-              <>
-                <button onClick={handleExportPoulesCSV} className="p-2 bg-gray-700 text-white rounded">
-                  Exporter CSV
-                </button>
-                <button onClick={handleSavePoules} className="p-2 bg-green-600 text-white rounded">
-                  Enregistrer les poules
-                </button>
-              </>
-            )}
-          </div>
-
-          {poules.length > 0 && (
-            <div className="mt-6">
-              <h3 className="text-lg font-semibold">Poules générées :</h3>
-              {poules.map((poule, index) => (
-                <div key={poule.id} className="mt-2">
-                  <h4 className="font-bold">Poule {index + 1}</h4>
-                  <ul className="list-disc ml-5">
-                    {poule.competiteurs.map((competiteur) => (
-                      <li key={competiteur.id}>
-                        {competiteur.prenom} {competiteur.nom}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-      )}
+      <div className="mt-4 flex flex-wrap gap-2">
+        <ButtonPrimaryy onClick={generatePoules}>Générer les Poules</ButtonPrimaryy>
+        <ButtonPrimaryy onClick={handleSavePoules}>Enregistrer les poules</ButtonPrimaryy>
+        <ButtonSecondaryy onClick={() => { setPoules([]); setMatchs([]); }}>Réinitialiser</ButtonSecondaryy>
+        
+      </div>
 
       {modeGestion === 'manuelle' && (
-        <div className="mt-4">
-          <p>Vous avez choisi la <strong>gestion manuelle</strong> des poules.</p>
-          <p className="mt-2">Nombre de compétiteurs : {competiteurs.length}</p>
+        <div className="mt-6 drag-drop-wrapper">
           <DragDropPoules
             poules={poules}
             setPoules={setPoules}
             competiteurs={competiteurs}
           />
-          <div className="flex gap-2 mt-4">
-            <button onClick={handleResetPoules} className="p-2 bg-yellow-500 text-white rounded">
-              Réinitialiser les Poules
-            </button>
-            {poules.length > 0 && (
-              <>
-                <button onClick={handleExportPoulesCSV} className="p-2 bg-gray-700 text-white rounded">
-                  Exporter CSV
-                </button>
-                <button onClick={handleSavePoules} className="p-2 bg-green-600 text-white rounded">
-                  Enregistrer les poules
-                </button>
-              </>
-            )}
-          </div>
+        </div>
+      )}
 
-          {poules.length > 0 && (
-            <div className="mt-8">
-              <h3 className="text-lg font-semibold">Aperçu des Poules :</h3>
-              {poules.map((poule, index) => (
-                <div key={poule.id} className="mt-4 border border-gray-300 rounded p-3">
-                  <h4 className="font-bold">Poule {index + 1}</h4>
-                  {poule.competiteurs.length === 0 ? (
-                    <p className="italic text-gray-500">Aucun compétiteur</p>
-                  ) : (
-                    <ul className="list-disc ml-5">
-                      {poule.competiteurs.map((competiteur) => (
-                        <li key={competiteur.id} className="flex justify-between items-center">
-                          {competiteur.prenom} {competiteur.nom}
-                          <button
-                            onClick={() => handlePouleRemove(competiteur.id, index)}
-                            className="ml-4 p-1 px-2 bg-red-500 text-white rounded"
-                          >
-                            Retirer
-                          </button>
-                        </li>
-                      ))}
-                    </ul>
-                  )}
-                </div>
-              ))}
-            </div>
-          )}
+
+      {poules.length > 0 && modeGestion !== 'manuelle' && (
+        <div className="mt-6">
+          <h3 className="text-2xl font-bold mb-4 text-gray-800">Poules générées :</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {poules.map((poule, index) => (
+              <div
+                key={poule.id}
+                className="bg-white border border-gray-200 rounded-2xl shadow-md p-5"
+              >
+                <h4 className="text-xl font-semibold mb-2 text-blue-700">Poule {index + 1}</h4>
+                {poule.competiteurs.length === 0 ? (
+                  <p className="italic text-gray-500">Aucun compétiteur</p>
+                ) : (
+                  <ul className="list-disc ml-5 space-y-1 text-gray-700">
+                    {poule.competiteurs.map((competiteur) => (
+                      <li key={competiteur?.id}>
+                        {competiteur?.prenom} {competiteur?.nom}
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {matchs.length > 0 && (
+        <div className="mt-6">
+          <h3 className="text-2xl font-bold mb-4 text-gray-800">Matchs (Premier tour élimination directe) :</h3>
+          <ul className="list-disc ml-5 space-y-1 text-gray-700">
+            {matchs.map((match, index) => (
+              <li key={index}>
+                {match.joueur1?.prenom || 'BYE'} {match.joueur1?.nom || ''} vs {match.joueur2?.prenom || 'BYE'} {match.joueur2?.nom || ''}
+              </li>
+            ))}
+          </ul>
         </div>
       )}
     </div>

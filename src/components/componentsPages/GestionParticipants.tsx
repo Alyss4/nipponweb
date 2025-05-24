@@ -1,13 +1,13 @@
 "use client";
 import React, { useEffect, useState } from 'react';
-import { Input, Select, ButtonPrimaryy, Checkbox, ButtonSecondaryy } from '../../components/componentsUI/ComponentForm';
+import { Input, Select, ButtonPrimaryy, Checkbox, ButtonSecondaryy } from '../ui/ComponentForm';
 import { useParticipants } from '../../hooks/useParticipants';
 import ParticipantTable from '../componentsTables/ParticipantTable';
-import OptionsImportation from '../gestionParticipants/OptionsImportation';
-import FormulaireParticipant from '../gestionParticipants/FormulaireParticipants';
-import { parseCSV } from '../gestionParticipants/parseCSV';
-import { Grade, GestionParticipantsProps, Pays, Club } from '../gestionParticipants/types';
-import { fetchGrades,fetchClub, fetchPays, handleCSVImport, handleCreateTournoi } from '../gestionParticipants/logic';
+import OptionsImportation from '../../app/inscriptiontournois/components/gestionParticipants/OptionsImportation';
+import FormulaireParticipant from '../../app/inscriptiontournois/components/gestionParticipants/FormulaireParticipants';
+import { parseCSV } from '../../app/inscriptiontournois/components/gestionParticipants/parseCSV';
+import { Grade, GestionParticipantsProps, Pays, Club } from '../../app/inscriptiontournois/components/gestionParticipants/types';
+import { fetchGrades,fetchClub, fetchPays, handleCSVImport, handleCreateTournoi } from '../../app/inscriptiontournois/components/gestionParticipants/logic';
 import { useRouter } from 'next/navigation';
 
 const GestionParticipants: React.FC<GestionParticipantsProps> = ({ formData }) => {

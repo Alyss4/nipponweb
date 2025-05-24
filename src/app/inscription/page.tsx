@@ -1,18 +1,17 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Input, Checkbox, ButtonPrimaryy, Select } from '../../components/componentsUI/ComponentForm';
-import { useRouter } from 'next/navigation'; 
+import { Input } from '../../components/ui/ComponentForm';
+import { useRouter } from 'next/navigation';
 
 export default function InscriptionPage() {
-  const [nom, setNom] = useState('');
   const [email, setEmail] = useState('');
   const [motDePasse, setMotDePasse] = useState('');
   const [confirmation, setConfirmation] = useState('');
   const [erreur, setErreur] = useState('');
   const [message, setMessage] = useState('');
-  const [isClient, setIsClient] = useState(false); 
-  const [routerReady, setRouterReady] = useState(false); 
+  const [isClient, setIsClient] = useState(false);
+  const [routerReady, setRouterReady] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
@@ -24,32 +23,29 @@ export default function InscriptionPage() {
 
   useEffect(() => {
     if (routerReady) {
-      const token = localStorage.getItem('token'); 
+      const token = localStorage.getItem('token');
       if (token) {
-        router.push('/dashboard');  
+        router.push('/dashboard');
       }
     }
   }, [routerReady, router]);
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
-  
+
     if (motDePasse !== confirmation) {
       setErreur("Les mots de passe ne correspondent pas.");
       return;
     }
-  
+
     setErreur('');
-  
+
     const data = {
-      nom,
       email,
       motDePasse,
       confirmation
     };
-  
-    const token = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
-  
+
     try {
       const response = await fetch('http://127.0.0.1:8000/api/inscription', {
         method: 'POST',
@@ -58,11 +54,9 @@ export default function InscriptionPage() {
         },
         body: JSON.stringify(data),
       });
-    
+
       const result = await response.json();
-    
-      console.log('Réponse API:', result);
-    
+
       if (response.ok) {
         if (result.token) {
           localStorage.setItem('token', result.token);
@@ -78,7 +72,6 @@ export default function InscriptionPage() {
         }
       }
     } catch (error) {
-      console.error('Erreur FETCH ou parsing JSON:', error);
       setErreur("Impossible de se connecter à l'API.");
     }
   };
@@ -91,14 +84,6 @@ export default function InscriptionPage() {
     <div className="container" style={{ maxWidth: '400px', marginTop: '50px' }}>
       <h2 className="text-center text-primary mb-4">Inscription</h2>
       <form onSubmit={handleSubmit}>
-        <Input
-          label="Nom complet"
-          type="text"
-          placeholder="Entrez votre nom"
-          value={nom}
-          onChange={(e) => setNom(e.target.value)}
-          required={true}
-        />
         <Input
           label="Email"
           type="email"
@@ -123,10 +108,8 @@ export default function InscriptionPage() {
           onChange={(e) => setConfirmation(e.target.value)}
           required={true}
         />
-
         {erreur && <p className="text-danger">{erreur}</p>}
         {message && <p className="text-success">{message}</p>}
-
         <div className="d-grid">
           <button
             type="submit"

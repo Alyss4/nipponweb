@@ -1,8 +1,8 @@
 import React, { useState, useEffect, ChangeEvent } from 'react';
-import Row from '../componentsUI/Row';
-import Col from '../componentsUI/Col';
+import Row from '../ui/Row';
+import Col from '../ui/Col';
 import GestionParticipants from './GestionParticipants';
-import { Input, Select, Radio, ButtonPrimaryy, Checkbox } from '../componentsUI/ComponentForm';
+import { Input, Select, Radio, ButtonPrimaryy, Checkbox } from '../ui/ComponentForm';
 
 type Categorie = {
   id: number;
