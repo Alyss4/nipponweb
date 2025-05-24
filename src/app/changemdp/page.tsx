@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Input, Checkbox, ButtonPrimaryy, Select } from '../../components/componentsUI/ComponentForm';
+import { Input, Checkbox, ButtonPrimaryy, Select } from '../../components/ui/ComponentForm';
 export default function ChangeMdp() {
   const [email, setEmail] = useState('');
   const [ancienMotDePasse, setAncienMotDePasse] = useState('');
