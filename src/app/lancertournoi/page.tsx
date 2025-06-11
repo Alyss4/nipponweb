@@ -10,6 +10,9 @@ interface Tournoi {
   systemeElimination: string;
 }
 
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL as string;
+
+
 export default function LancerTournoiPage() {
   const [tournois, setTournois] = useState<Tournoi[]>([]);
   const [role, setRole] = useState<string | null>(null);
@@ -27,7 +30,7 @@ export default function LancerTournoiPage() {
 
     const fetchTournois = async () => {
       try {
-        const res = await fetch('http://localhost:8000/api/mes-tournois', {
+        const res = await fetch(`${API_BASE_URL}/mes-tournois`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         if (!res.ok) throw new Error('Erreur de chargement des tournois');
@@ -47,7 +50,7 @@ export default function LancerTournoiPage() {
 
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch(`http://localhost:8000/api/tournois/${id}`, {
+      const res = await fetch(`${API_BASE_URL}/tournois/${id}`, {
         method: 'DELETE',
         headers: { Authorization: `Bearer ${token}` },
       });

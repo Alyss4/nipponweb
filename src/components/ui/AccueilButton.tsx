@@ -1,6 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
 import { IconType } from 'react-icons';
 
 interface ButtonProps {
@@ -8,10 +9,17 @@ interface ButtonProps {
   label: string;
   href?: string;
   onClick?: () => void;
+  disabled?: boolean;
 }
+
 
 const Button = ({ icon: Icon, label, href, onClick }: ButtonProps) => {
   const router = useRouter();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const handleClick = () => {
     if (onClick) {
@@ -23,7 +31,7 @@ const Button = ({ icon: Icon, label, href, onClick }: ButtonProps) => {
 
   return (
     <button type="button" className="icon-button" onClick={handleClick}>
-      <Icon size={64} />
+      {mounted && <Icon size={64} />}
       <span className="label">{label}</span>
     </button>
   );
@@ -37,9 +45,9 @@ export const ButtonStyles = () => (
       width: 180px;
       height: 180px;
       background-color: #f5f8fa;
-      border: 2px solid #003049;
+      border: 2px solid #212529;
       border-radius: 24px;
-      color: #003049;
+      color: #212529;
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -53,8 +61,8 @@ export const ButtonStyles = () => (
 
     .icon-button:hover {
       transform: translateY(-6px);
-      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
-      background-color: #e1e8ed;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.29);
+      background-color: rgba(192, 192, 192, 0.37);
     }
 
     .label {

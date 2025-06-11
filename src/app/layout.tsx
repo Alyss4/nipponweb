@@ -4,57 +4,38 @@ import Head from 'next/head';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'flag-icons/css/flag-icons.min.css';
 import './globals.css';
-import Link from 'next/link';
+import { useRouter, usePathname } from 'next/navigation'; 
+import { UserProvider, useUser } from '../contexts/UserContext';
 import UserSidebarInfo from '../components/componentsSidebar/UserSidebarInfo';
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation'; 
 import VisitorSidebarLinks from '../components/componentsSidebar/VisitorSidebarLinks';
 import CompetitorSidebarLinks from '@/components/componentsSidebar/CompetitorSidebarLinks';
 import ManagerSidebarLinks from '@/components/componentsSidebar/ManagerSidebarLinks';
 import AdministratorSidebarLinks from '@/components/componentsSidebar/AdministratorSidebarLinks';
 import RetourButton from '@/components/ui/RetourButton';
-import { ButtonSecondaryy } from '@/components/ui/ComponentForm';
+import { ButtonPrimaryy, ButtonSecondaryy } from '@/components/ui/ComponentForm';
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [role, setRole] = useState<string | null>(null);
+function LayoutContent({ children }: { children: React.ReactNode }) {
+  const pathname = usePathname();
+  const isScoreboardLive = pathname.startsWith('/scoreboard-live');
+
+  const { isAuthenticated, email, role, logout } = useUser();
   const router = useRouter();
 
-  useEffect(() => {
-    const token = localStorage.getItem('token');
-    const storedRole = localStorage.getItem('role');
-    setIsAuthenticated(!!token);
-    setRole(storedRole);
-  }, []);
-
-  const handleLogout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('role');
-    setIsAuthenticated(false);
-    setRole(null);
-    router.push('/');
+  const renderSidebarLinks = () => {
+    if (!isAuthenticated) return <VisitorSidebarLinks />;
+    switch (role) {
+      case 'c': return <CompetitorSidebarLinks />;
+      case 'g': return <ManagerSidebarLinks />;
+      case 'a': return <AdministratorSidebarLinks />;
+      default: return <VisitorSidebarLinks />;
+    }
   };
 
-  const renderSidebarLinks = () => {
-    if (!isAuthenticated) {
-      return <VisitorSidebarLinks />;
-    }
-
-    switch (role) {
-      case 'c': // Compétiteur
-        return <CompetitorSidebarLinks />;
-      case 'g': // gestionnaire
-        return <ManagerSidebarLinks />;
-      case 'a': // Administrateur
-        return <AdministratorSidebarLinks />;
-      case 'u': // Utilisateur (même droit que visiteur)
-      default:
-        return <VisitorSidebarLinks />;
-    }
+  const handleInscription = () => router.push("/inscription");
+  const handleConnexion = () => router.push("/connexion");
+  const handleLogout = () => {
+    logout();
+    router.push('/');
   };
 
   return (
@@ -64,61 +45,49 @@ export default function RootLayout({
         <meta name="description" content="Gérez vos tournois facilement" />
       </Head>
       <body className="d-flex" style={{ fontFamily: 'Luciole, sans-serif', minHeight: '100vh' }}>
-        <aside className="text-light p-3 d-flex flex-column" style={{ width: '13%', backgroundColor: 'var(--bg-primary)', minHeight: '100vh' }}>
-          <a href="/">
-          <img src="./icon.png" alt="Logo Nippon Kempo" className="mx-auto d-block" style={{ width: '80%' }} />
-          </a>
-          <div className="flex-grow-1">
-            {renderSidebarLinks()}
-            <h6 className="text-warning mt-3">Test</h6>
-            <ul className="list-unstyled">
-              <li><Link href="/roles" className="text-light text-decoration-none">Roles</Link></li>
-            </ul>
-          </div>
-        </aside>
+        {isScoreboardLive ? (
+          <>{children}</>
+        ) : (
+          <>
+            <aside className="text-light p-3 d-flex flex-column" style={{ width: '13%', backgroundColor: 'var(--bg-primary)', minHeight: '100vh' }}>
+              <a href="/">
+                <img src="/icon.png" alt="Logo Nippon Kempo" className="mx-auto d-block" style={{ width: '80%' }} />
+              </a>
+              <div className="flex-grow-1">
+                {renderSidebarLinks()}
+              </div>
+            </aside>
 
-        <main className="flex-grow-1 p-2" style={{ backgroundColor: 'var(--bg-secondary)' }}>
-          <div className="d-flex justify-content-end mb-3">
-            <UserSidebarInfo />
-            <RetourButton/>
-            {!isAuthenticated ? (
-              <>
-                <Link href="/inscription">
-                  <button
-                    className="btn"
-                    style={{
-                      backgroundColor: 'var(--bg-button-primary)',
-                      color: 'var(--text-button-primary)',
-                      borderColor: 'var(--border-button-primary)',
-                    }}
-                  >
-                    Inscription
-                  </button>
-                </Link>
-                <Link href="/connexion">
-                  <button
-                    className="btn"
-                    style={{
-                      backgroundColor: 'var(--bg-button-secondary)',
-                      color: 'var(--text-button-secondary)',
-                      borderColor: 'var(--border-button-secondary)',
-                    }}
-                  >
-                    Se connecter
-                  </button>
-                </Link>
-              </>
-            ) : (
-              <ButtonSecondaryy
-                onClick={handleLogout}
-              >
-                Déconnexion
-              </ButtonSecondaryy>
-            )}
-          </div>
-          {children}
-        </main>
+            <main className="flex-grow-1 p-2" style={{ backgroundColor: 'var(--bg-secondary)' }}>
+              <div className="d-flex align-items-center justify-content-end mb-3">
+                <UserSidebarInfo email={email} />
+                {!isAuthenticated ? (
+                  <>
+                    <RetourButton />
+                    <ButtonPrimaryy onClick={handleInscription}>Inscription</ButtonPrimaryy>
+                    <ButtonSecondaryy onClick={handleConnexion}>Se connecter</ButtonSecondaryy>
+                  </>
+                ) : (
+                  <>
+                    <RetourButton />
+                    <ButtonSecondaryy onClick={handleLogout}>Déconnexion</ButtonSecondaryy>
+                  </>
+                )}
+              </div>
+              {children}
+            </main>
+          </>
+        )}
       </body>
     </html>
+  );
+}
+
+// Ce composant englobe toute ton app
+export default function RootLayout({ children }: { children: React.ReactNode }) {
+  return (
+    <UserProvider>
+      <LayoutContent>{children}</LayoutContent>
+    </UserProvider>
   );
 }

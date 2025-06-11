@@ -1,5 +1,7 @@
 import { Grade, Pays, Club } from './gestionParticipants/types';
 
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL as string;
+
 export const validerFormulaire = (data: any) => {
   if (!data.prenom || !data.nom || !data.date_naissance || !data.sexe || !data.poids || !data.id_pays || !data.id_club || !data.id_grade) {
     return { isValid: false, message: "Tous les champs doivent être remplis." };
@@ -14,7 +16,7 @@ export const validerFormulaire = (data: any) => {
   
   export const soumettreFormulaire = async (data: any) => {
     try {
-        const response = await fetch('http://localhost:8000/api/inscrireAuTournoi', {
+        const response = await fetch(`${API_BASE_URL}/inscrireAuTournoi`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -40,7 +42,7 @@ export const validerFormulaire = (data: any) => {
 
 export const fetchGrades = async (setGrades: React.Dispatch<React.SetStateAction<Grade[]>>) => {
   try {
-    const response = await fetch('http://localhost:8000/api/grades', {
+    const response = await fetch(`${API_BASE_URL}/grades`, {
       headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
     });
     const result = await response.json();
@@ -52,7 +54,7 @@ export const fetchGrades = async (setGrades: React.Dispatch<React.SetStateAction
 //TODO
 export const fetchPays = async (setPays: React.Dispatch<React.SetStateAction<Pays[]>>)=>{
     try{
-        const response = await fetch ('http://localhost:8000/api/pays',{
+        const response = await fetch(`${API_BASE_URL}/pays`, {
             headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
         });
         const result = await response.json();
@@ -64,7 +66,7 @@ export const fetchPays = async (setPays: React.Dispatch<React.SetStateAction<Pay
 //TODO
 export const fetchClub = async (setClub: React.Dispatch<React.SetStateAction<Club[]>>)=>{
     try{
-        const response = await fetch ('http://localhost:8000/api/clubs',{
+        const response = await fetch(`${API_BASE_URL}/clubs`, {
             headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
         });
         const result = await response.json();

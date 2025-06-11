@@ -5,6 +5,9 @@ import { useParams, useRouter } from 'next/navigation';
 import PouleSection from '@/components/componentsPages/PouleSectionMatch';
 import CombatModal from '@/components/componentsPages/CombatModal';
 import { Match, Competiteur } from '@/types/types';
+import { ButtonPrimaryy } from '@/components/ui/ComponentForm';
+
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL as string;
 
 interface Poule {
   id: number;
@@ -24,30 +27,24 @@ export default function MatchsPage() {
     const fetchPoulesEtSysteme = async () => {
       try {
         const token = localStorage.getItem('token');
-
-        const tournoiRes = await fetch(`http://localhost:8000/api/tournois/${tournoiId}`, {
+        const tournoiRes = await fetch(`${API_BASE_URL}/tournois/${tournoiId}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         const tournoiData = await tournoiRes.json();
         setSysteme(tournoiData.systemeElimination);
-
-        const poulesRes = await fetch(`http://localhost:8000/api/tournois/${tournoiId}/poules-avec-competiteurs`, {
+        const poulesRes = await fetch(`${API_BASE_URL}/tournois/${tournoiId}/poules-avec-competiteurs`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         const poulesData = await poulesRes.json();
-
         if (!Array.isArray(poulesData)) {
           console.error('Réponse inattendue :', poulesData);
           return;
         }
-
         setPoules(poulesData);
-
         if (poulesData.length === 0) {
           router.push(`/poules/${tournoiId}`);
           return;
         }
-
         for (const poule of poulesData) {
           await fetchMatchs(poule.id);
         }
@@ -65,18 +62,19 @@ export default function MatchsPage() {
       let endpoint = '';
 
       switch (systeme) {
-        case 'Poule':
+        case 'Poule ( tous contre tous )':
+        case 'Poule ( Tableau final )':
         case 'Round robin':
-          endpoint = `http://localhost:8000/api/poules/${pouleId}/matchs/generer`;
+          endpoint = `${API_BASE_URL}/poules/${pouleId}/matchs/generer`;
           break;
         case 'Elimination directe':
-          endpoint = `http://localhost:8000/api/poules/${pouleId}/matchs/elimination-directe`;
+          endpoint = `${API_BASE_URL}/poules/${pouleId}/matchs/elimination-directe`;
           break;
         case 'Double elimination':
-          endpoint = `http://localhost:8000/api/poules/${pouleId}/matchs/double-elimination`;
+          endpoint = `${API_BASE_URL}/poules/${pouleId}/matchs/double-elimination`;
           break;
         case 'Tableau final':
-          endpoint = `http://localhost:8000/api/poules/${pouleId}/matchs/tableau-final`;
+          endpoint = `${API_BASE_URL}/poules/${pouleId}/matchs/tableau-final`;
           break;
         default:
           alert('Système d’élimination non pris en charge.');
@@ -101,7 +99,7 @@ export default function MatchsPage() {
   const fetchMatchs = async (pouleId: number) => {
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`http://localhost:8000/api/poules/${pouleId}/matchs`, {
+      const response = await fetch(`${API_BASE_URL}/poules/${pouleId}/matchs`, {
         headers: { Authorization: `Bearer ${token}` },
       });
 
@@ -115,7 +113,7 @@ export default function MatchsPage() {
   const updateMatch = async (matchId: number, updates: Partial<Match>) => {
     try {
       const token = localStorage.getItem('token');
-      await fetch(`http://localhost:8000/api/matchs/${matchId}`, {
+      await fetch(`${API_BASE_URL}/matchs/${matchId}`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
@@ -134,12 +132,44 @@ export default function MatchsPage() {
     }
   };
 
+  const toutesPoulesTerminees =
+    Object.values(matchsParPoule).length === poules.length &&
+    Object.values(matchsParPoule).every(
+      matchs =>
+        matchs.length > 0 &&
+        matchs.every(
+          m =>
+            (typeof m.scoreP1 === "number" && typeof m.scoreP2 === "number") &&
+            (m.scoreP1 !== 0 || m.scoreP2 !== 0)
+        )
+    );
+
   return (
     <div className="p-6 max-w-5xl mx-auto text-o-primary">
       <h1 className="text-3xl font-bold mb-6 text-center text-red-500">Lancer un combat</h1>
       <p className="text-center mb-6 text-lg font-semibold text-slate-800">
         Système d'élimination : <span className="font-bold text-indigo-600">{systeme}</span>
       </p>
+      {systeme.toLowerCase().includes("tous contre tous") && toutesPoulesTerminees && (
+        <div className="text-center mt-12">
+          <ButtonPrimaryy
+            className="btn btn-primary text-lg"
+            onClick={() => router.push(`/resultats-poules/${tournoiId}`)}
+          >
+            Voir les résultats des poules
+          </ButtonPrimaryy>
+        </div>
+      )}
+      {systeme === "Poule ( Tableau final )" && toutesPoulesTerminees && (
+        <div className="text-center mt-12">
+          <ButtonPrimaryy
+            className="btn btn-primary text-lg"
+            onClick={() => router.push(`/bracket/${tournoiId}`)} 
+          >
+            Lancer le bracket
+          </ButtonPrimaryy>
+        </div>
+      )}
 
       {poules.map((poule) => (
         <PouleSection

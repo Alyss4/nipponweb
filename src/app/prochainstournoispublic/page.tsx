@@ -1,14 +1,8 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
 import ProchainsTournoisTable from '@/components/componentsTables/ProchainsTournoisTable';
-import {
-  ButtonPrimaryy,
-  ButtonSecondaryy,
-  Checkbox,
-  Select,
-} from '@/components/ui/ComponentForm';
+import { ButtonSecondaryy } from '@/components/ui/ComponentForm';
 import LaModal from '@/components/ui/Modal';
 
 interface Tournoi {
@@ -41,39 +35,30 @@ interface Categorie {
 }
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL as string;
 
-export default function ProchainsTournois() {
+export default function ProchainsTournoisPublic() {
   const [tournois, setTournois] = useState<Tournoi[]>([]);
   const [selectedTournoi, setSelectedTournoi] = useState<Tournoi | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(10);
-  const [hideInscrits, setHideInscrits] = useState(false);
-  const [showNonInscrits, setShowNonInscrits] = useState(false);
-  const [sortByDate, setSortByDate] = useState<string | null>(null);
-  const [etat, setEtat] = useState<string | null>(null);
-  const [message, setMessage] = useState<string | null>(null);
-  const [inscriptionDisabled, setInscriptionDisabled] = useState(false);
   const [grades, setGrades] = useState<Grade[]>([]);
   const [categories, setCategories] = useState<Categorie[]>([]);
-
-  const router = useRouter();
-
-  const idUtilisateurCourant =
-    typeof window !== 'undefined'
-      ? parseInt(localStorage.getItem('userId') || '0', 10)
-      : 0;
 
   useEffect(() => {
     const fetchMeta = async () => {
       try {
-        const token = localStorage.getItem('token') || '';
+        // Appel SANS token
         const [gradesRes, catRes] = await Promise.all([
-          fetch(`${API_BASE_URL}/grades`, { headers: { Authorization: `Bearer ${token}` } }),
-          fetch(`${API_BASE_URL}/categories`, { headers: { Authorization: `Bearer ${token}` } }),
+          fetch(`${API_BASE_URL}/grades`),
+          fetch(`${API_BASE_URL}/categories`)
         ]);
-        setGrades(await gradesRes.json());
-        setCategories(await catRes.json());
-      } catch (err) { console.error('Erreur chargement des grades/catégories', err); }
+        const gradesData = await gradesRes.json();
+        const categoriesData = await catRes.json();
+        setGrades(gradesData);
+        setCategories(categoriesData);
+      } catch (err) {
+        console.error('Erreur chargement des grades/catégories', err);
+      }
     };
     fetchMeta();
   }, []);
@@ -81,23 +66,9 @@ export default function ProchainsTournois() {
   useEffect(() => {
     const fetchTournoisPublics = async () => {
       try {
-        const params = new URLSearchParams();
-        if (hideInscrits) params.append('hideInscrits', 'true');
-        if (showNonInscrits) params.append('showNonInscrits', 'true');
-        if (sortByDate) params.append('sortByDate', sortByDate);
-        if (etat) params.append('etat', etat);
-
-        const userId = localStorage.getItem('userId') || '0';
-        const token = localStorage.getItem('token') || '';
-
-        const url = `${API_BASE_URL}/tournoisPublic/${userId}?${params.toString()}`;
-        const response = await fetch(url, {
-          method: 'GET',
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-
+        // Toujours l'id = 0 (anonyme/public)
+        const url = `${API_BASE_URL}/tournoisPublics`;
+        const response = await fetch(url, { method: 'GET' });
         const data = await response.json();
         if (Array.isArray(data)) {
           setTournois(data);
@@ -106,50 +77,8 @@ export default function ProchainsTournois() {
         console.error('Erreur lors du fetch des tournois publics :', error);
       }
     };
-
     fetchTournoisPublics();
-  }, [hideInscrits, showNonInscrits, sortByDate, etat]);
-
-  const handleInscription = async () => {
-    try {
-      const token = localStorage.getItem('token') || '';
-      const tournoiId = selectedTournoi?.id;
-      if (!tournoiId) return;
-      const userRes = await fetch(
-        `${API_BASE_URL}/getIDCompetiteurUtilisateur`,
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-      const userData = await userRes.json();
-      if (!userData.id_competiteur) {
-        router.push(`/inscriptiontournois?id=${tournoiId}`);
-        return;
-      }
-      const insRes = await fetch(
-        `${API_BASE_URL}/inscrireAuTournoiDejaCompetiteur`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({
-            id_tournoi: tournoiId,
-            id_competiteur: userData.id_competiteur,
-          }),
-        }
-      );
-      const insData = await insRes.json();
-      if (insRes.ok) {
-        setMessage('✅ Inscription réussie au tournoi.');
-        setInscriptionDisabled(true);
-      } else {
-        setMessage(`❌ ${insData.message || "Erreur lors de l'inscription."}`);
-      }
-    } catch (err) {
-      console.error(err);
-      setMessage('❌ Une erreur est survenue. Veuillez réessayer.');
-    }
-  };
+  }, []);
 
   const indexOfLastTournoi = currentPage * itemsPerPage;
   const indexOfFirstTournoi = indexOfLastTournoi - itemsPerPage;
@@ -157,7 +86,6 @@ export default function ProchainsTournois() {
 
   const getGradeName = (id?: number) => grades.find(g => g.id === id)?.nom ?? '-';
   const getCategorieName = (id?: number) => categories.find(c => c.id === id)?.nom ?? '-';
-
 
   return (
     <div className="container mt-6">
@@ -169,47 +97,38 @@ export default function ProchainsTournois() {
         tournois={currentTournois}
         onSelectTournoi={(tournoi) => {
           setSelectedTournoi(tournoi);
-          setMessage(null);
-          setInscriptionDisabled(false);
         }}
-        idUtilisateurCourant={idUtilisateurCourant}
-        hideInscrits={hideInscrits}
-        showNonInscrits={showNonInscrits}
-        sortByDate={sortByDate}
-        etatGlobal={etat}
-        setHideInscrits={setHideInscrits}
-        setShowNonInscrits={setShowNonInscrits}
-        setSortByDate={setSortByDate}
-        setEtatGlobal={setEtat}
+        idUtilisateurCourant={0} // anonyme
+        hideInscrits={false}
+        showNonInscrits={false}
+        sortByDate={null}
+        etatGlobal={null}
+        setHideInscrits={() => {}}
+        setShowNonInscrits={() => {}}
+        setSortByDate={() => {}}
+        setEtatGlobal={() => {}}
         grades={grades}
         categories={categories}
       />
 
       {selectedTournoi && (
         <div className="flex flex-col sm:flex-row justify-end gap-3 my-4">
-          <ButtonPrimaryy onClick={handleInscription} disabled={inscriptionDisabled}>
-            {inscriptionDisabled ? 'Déjà inscrit' : "S'inscrire au tournoi"}
-          </ButtonPrimaryy>
+          {/* PAS DE BOUTON INSCRIPTION */}
           <ButtonSecondaryy onClick={() => setIsModalOpen(true)}>
             Détails
           </ButtonSecondaryy>
-          {message && (
-            <div className="text-sm text-o-primary font-semibold mt-2">
-              {message}
-            </div>
-          )}
         </div>
       )}
 
       <div className="flex justify-center space-x-2 mt-6">
         {Array.from({ length: Math.ceil(tournois.length / itemsPerPage) }, (_, index) => (
-          <ButtonPrimaryy
+          <ButtonSecondaryy
             key={index}
             onClick={() => setCurrentPage(index + 1)}
             className={currentPage === index + 1 ? 'font-bold' : ''}
           >
             {index + 1}
-          </ButtonPrimaryy>
+          </ButtonSecondaryy>
         ))}
       </div>
 

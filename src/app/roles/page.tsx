@@ -7,6 +7,7 @@ interface Utilisateur {
   role: 'visiteur' | 'competiteur' | 'gestionnaire' | 'admin';
   is_active: boolean;
 }
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL as string;
 
 export default function RolePage() {
   const [emailRecherche, setEmailRecherche] = useState('');
@@ -16,7 +17,7 @@ export default function RolePage() {
   const handleRecherche = async () => {
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`http://localhost:8000/api/utilisateurs/search?email=${emailRecherche}`, {
+      const response = await fetch(`${API_BASE_URL}/utilisateurs/search?email=${emailRecherche}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -31,7 +32,7 @@ export default function RolePage() {
   const handleChangeRole = async (email: string, nouveauRole: Utilisateur['role']) => {
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`http://localhost:8000/api/utilisateurs/${email}/role`, {
+      const response = await fetch(`${API_BASE_URL}/utilisateurs/${email}/role`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -57,7 +58,7 @@ export default function RolePage() {
 
   return (
     <div className="container mt-5">
-      <h2 className="text-center text-primary mb-4">Gestion des rôles</h2>
+      <h2 className="text-center text-o-primary mb-4">Gestion des rôles</h2>
       <p className="text-muted text-center">
         Afin de changer de rôle d'un utilisateur, veuillez saisir l'email de l'utilisateur, puis changer son rôle.
       </p>
@@ -71,7 +72,7 @@ export default function RolePage() {
           onChange={(e) => setEmailRecherche(e.target.value)}
           style={{
             backgroundColor: 'var(--bg-secondary)',
-            borderColor: 'var(--text-primary)',
+            borderColor: 'var(--text-o-primary)',
             borderRadius: '5px',
           }}
         />

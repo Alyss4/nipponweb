@@ -2,6 +2,9 @@
 import React, { useState, useEffect } from 'react';
 import { Input, Checkbox, ButtonPrimaryy, Select } from '../../components/ui/ComponentForm';
 
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL as string;
+
+
 export default function Categorie() {
   const [nom, setNom] = useState('');
   const [poidsMin, setPoidsMin] = useState('');
@@ -21,7 +24,7 @@ export default function Categorie() {
   useEffect(() => {
     const fetchGrades = async () => {
       try {
-        const response = await fetch('http://localhost:8000/api/grades', {
+        const response = await fetch(`${API_BASE_URL}/grades`, {
           method: 'GET',
           headers: {
             'Authorization': `Bearer ${localStorage.getItem('token')}`,
@@ -102,7 +105,7 @@ export default function Categorie() {
     try {
       const token = localStorage.getItem('token');
 
-      const response = await fetch('http://localhost:8000/api/categories', {
+      const response = await fetch(`${API_BASE_URL}/categories`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -140,7 +143,7 @@ export default function Categorie() {
 
   return (
     <div className="container" style={{ maxWidth: '450px', marginTop: '50px' }}>
-      <h2 className="text-center text-primary mb-4">Créer une catégorie</h2>
+      <h2 className="text-center text-o-primary mb-4">Créer une catégorie</h2>
       <form onSubmit={handleSubmit}>
         <Input
           label="Nom de la catégorie"

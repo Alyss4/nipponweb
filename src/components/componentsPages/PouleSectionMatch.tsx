@@ -20,8 +20,17 @@ interface Props {
 export default function PouleSection({ poule, matchs, genererMatchs, onLancerCombat }: Props) {
   const [page, setPage] = useState(1);
   const matchsParPage = 12;
-  const totalPages = Math.ceil(matchs.length / matchsParPage);
-  const matchsAffiches = matchs.slice((page - 1) * matchsParPage, page * matchsParPage);
+
+  const matchsNonScorés = matchs.filter(
+    m => m.scoreP1 === 0 && m.scoreP2 === 0
+  );
+  const matchsScorés = matchs.filter(
+    m => m.scoreP1 !== 0 || m.scoreP2 !== 0
+  );
+  const matchsTriés = [...matchsNonScorés, ...matchsScorés];
+
+  const totalPages = Math.ceil(matchsTriés.length / matchsParPage);
+  const matchsAffiches = matchsTriés.slice((page - 1) * matchsParPage, page * matchsParPage);
 
   return (
     <div style={{ marginTop: '40px', border: '1px solid #ddd', borderRadius: '10px', padding: '24px' }}>
@@ -44,9 +53,15 @@ export default function PouleSection({ poule, matchs, genererMatchs, onLancerCom
       </div>
 
       <div style={{ textAlign: 'center', marginBottom: '20px' }}>
-        <ButtonPrimaryy onClick={() => genererMatchs(poule.id)}>
-          Générer les matchs
-        </ButtonPrimaryy>
+        {matchs.length === 0 ? (
+          <ButtonPrimaryy onClick={() => genererMatchs(poule.id)}>
+            Générer les matchs
+          </ButtonPrimaryy>
+        ) : (
+          <span className="text-green-600 font-bold" style={{ fontSize: 16 }}>
+            Les matchs ont été générés !
+          </span>
+        )}
       </div>
 
       {matchsAffiches.length > 0 && (
@@ -57,29 +72,36 @@ export default function PouleSection({ poule, matchs, genererMatchs, onLancerCom
             gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
             gap: '16px'
           }}>
-            {matchsAffiches.map(match => (
-              <div key={match.id} style={{
-                border: '1px solid #ccc',
-                borderRadius: '8px',
-                padding: '12px',
-                backgroundColor: '#f9f9f9',
-                textAlign: 'center'
-              }}>
-                <h4 style={{ fontSize: '14px', marginBottom: '8px' }}>
-                  {match.competiteur1?.prenom ?? 'BYE'} {match.competiteur1?.nom ?? ''} vs {match.competiteur2?.prenom ?? 'BYE'} {match.competiteur2?.nom ?? ''}
-                </h4>
-                <div style={{ fontSize: '12px', color: '#555', marginBottom: '10px' }}>
-                  Score : {match.scoreP1 ?? 0} - {match.scoreP2 ?? 0} <br />
-                  Pénalités : {match.penaliteP1 ?? 0} - {match.penaliteP2 ?? 0}
+            {matchsAffiches.map(match => {
+              const isScored = match.scoreP1 !== 0 || match.scoreP2 !== 0;
+              return (
+                <div key={match.id} style={{
+                  border: '1px solid #ccc',
+                  borderRadius: '8px',
+                  padding: '12px',
+                  backgroundColor: '#f9f9f9',
+                  textAlign: 'center'
+                }}>
+                  <h4 style={{ fontSize: '14px', marginBottom: '8px' }}>
+                    {match.competiteur1?.prenom ?? 'BYE'} {match.competiteur1?.nom ?? ''} vs {match.competiteur2?.prenom ?? 'BYE'} {match.competiteur2?.nom ?? ''}
+                  </h4>
+                  <div style={{ fontSize: '12px', color: '#555', marginBottom: '10px' }}>
+                    Score : {match.scoreP1 ?? 0} - {match.scoreP2 ?? 0} <br />
+                    Pénalités : {match.penaliteP1 ?? 0} - {match.penaliteP2 ?? 0}
+                  </div>
+                  {isScored ? (
+                    <span style={{ color: "#4caf50", fontWeight: "bold" }}>Déjà joué</span>
+                  ) : (
+                    <ButtonSecondaryy
+                      style={{ fontSize: '12px', padding: '6px 12px', backgroundColor: '#e83c28' }}
+                      onClick={() => onLancerCombat(match)}
+                    >
+                      Lancer le combat
+                    </ButtonSecondaryy>
+                  )}
                 </div>
-                <ButtonSecondaryy
-                  style={{ fontSize: '12px', padding: '6px 12px', backgroundColor: '#e83c28' }}
-                  onClick={() => onLancerCombat(match)}
-                >
-                  Lancer le combat
-                </ButtonSecondaryy>
-              </div>
-            ))}
+              )
+            })}
           </div>
 
           {/* Pagination */}

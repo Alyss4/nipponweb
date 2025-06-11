@@ -39,7 +39,7 @@ export default function RèglementPage() {
 
   return (
     <div className="container mt-5" style={{ maxWidth: '700px' }}>
-      <h2 className="text-center text-primary mb-4">Règlement de la Compétition de Nippon Kempo</h2>
+      <h2 className="text-center text-o-primary mb-4">Règlement de la Compétition de Nippon Kempo</h2>
 
       <table className="table table-striped table-hover" style={{ borderRadius: '10px' }}>
         <thead className="table-light">

@@ -59,12 +59,12 @@ export default function ClassementPage() {
 
   return (
     <div className="container mt-5" style={{ maxWidth: '1000px' }}>
-      <h2 className="text-center text-primary mb-4">Classements des Tournois de Nippon Kempo</h2>
+      <h2 className="text-center text-o-primary mb-4">Classements des Tournois de Nippon Kempo</h2>
 
       {classements.map((classement, index) => (
         <div key={index} className="mb-5">
-          <h3 className='text-primary'>{classement.club} - {classement.tournoi}</h3>
-          <p className="text-primary">
+          <h3 className='text-o-primary'>{classement.club} - {classement.tournoi}</h3>
+          <p className="text-o-primary">
             <strong>Pays du Club :</strong> {classement.paysClub} <br />
             <strong>Lieu :</strong> {classement.lieu} <br />
             <strong>Date :</strong> {classement.date}

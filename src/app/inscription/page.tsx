@@ -4,6 +4,8 @@ import React, { useState, useEffect } from 'react';
 import { Input } from '../../components/ui/ComponentForm';
 import { useRouter } from 'next/navigation';
 
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL as string;
+
 export default function InscriptionPage() {
   const [email, setEmail] = useState('');
   const [motDePasse, setMotDePasse] = useState('');
@@ -40,14 +42,10 @@ export default function InscriptionPage() {
 
     setErreur('');
 
-    const data = {
-      email,
-      motDePasse,
-      confirmation
-    };
+    const data = { email, motDePasse, confirmation };
 
     try {
-      const response = await fetch('http://127.0.0.1:8000/api/inscription', {
+      const response = await fetch(`${API_BASE_URL}/inscription`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -82,7 +80,7 @@ export default function InscriptionPage() {
 
   return (
     <div className="container" style={{ maxWidth: '400px', marginTop: '50px' }}>
-      <h2 className="text-center text-primary mb-4">Inscription</h2>
+      <h2 className="text-center text-o-primary mb-4">Inscription</h2>
       <form onSubmit={handleSubmit}>
         <Input
           label="Email"

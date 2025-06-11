@@ -32,7 +32,7 @@ export default function ContactPage() {
 
   return (
     <div className="container mt-5" style={{ maxWidth: '700px' }}>
-      <h2 className="text-center text-primary mb-4">Contactez-nous</h2>
+      <h2 className="text-center text-o-primary mb-4">Contactez-nous</h2>
 
       <form onSubmit={handleSubmit}>
         <Input

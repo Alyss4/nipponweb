@@ -2,7 +2,10 @@
 
 import { useEffect, useState } from 'react';
 import { Input, Select, ButtonPrimaryy, ButtonSecondaryy } from '@/components/ui/ComponentForm';
+import DemandesComponent from '@/components/componentsPages/DemandesComponent';
 import { useRouter } from 'next/navigation';
+
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL as string;
 
 export default function ProfilPage() {
   const router = useRouter();
@@ -10,12 +13,10 @@ export default function ProfilPage() {
   const [role, setRole] = useState('');
   const [userId, setUserId] = useState<number | null>(null);
 
-  // Utilisateur
   const [email, setEmail] = useState('');
   const [motDePasse, setMotDePasse] = useState('');
   const [confirmMdp, setConfirmMdp] = useState('');
 
-  // Compétiteur
   const [prenom, setPrenom] = useState('');
   const [nom, setNom] = useState('');
   const [dateNaissance, setDateNaissance] = useState('');
@@ -42,7 +43,7 @@ export default function ProfilPage() {
       return;
     }
 
-    fetch('http://localhost:8000/api/user', {
+    fetch(`${API_BASE_URL}/user`, {
       headers: { Authorization: `Bearer ${token}` },
     })
       .then(res => res.json())
@@ -52,12 +53,12 @@ export default function ProfilPage() {
       });
 
     if (storedRole === 'c') {
-      fetch('http://localhost:8000/api/getIDCompetiteurUtilisateur', {
+      fetch(`${API_BASE_URL}/getIDCompetiteurUtilisateur`, {
         headers: { Authorization: `Bearer ${token}` },
       })
         .then(res => res.json())
         .then(({ id }) => {
-          return fetch('http://localhost:8000/api/getCompetiteurById', {
+          return fetch(`${API_BASE_URL}/getCompetiteurById`, {
             method: 'POST',
             headers: {
               Authorization: `Bearer ${token}`,
@@ -83,9 +84,9 @@ export default function ProfilPage() {
     const fetchSelectData = async () => {
       const headers = { Authorization: `Bearer ${token}` };
       const [paysRes, clubsRes, gradesRes] = await Promise.all([
-        fetch('http://localhost:8000/api/pays', { headers }),
-        fetch('http://localhost:8000/api/clubs', { headers }),
-        fetch('http://localhost:8000/api/grades', { headers }),
+        fetch(`${API_BASE_URL}/pays`, { headers }),
+        fetch(`${API_BASE_URL}/clubs`, { headers }),
+        fetch(`${API_BASE_URL}/grades`, { headers }),
       ]);
       setPaysList(await paysRes.json());
       setClubList(await clubsRes.json());
@@ -125,7 +126,7 @@ export default function ProfilPage() {
     }
 
     try {
-      const res = await fetch('http://localhost:8000/api/profil/update', {
+      const res = await fetch(`${API_BASE_URL}/profil/update`, {
         method: 'PUT',
         headers: {
           Authorization: `Bearer ${token}`,
@@ -148,10 +149,11 @@ export default function ProfilPage() {
     }
   };
 
+
   return (
     <div className="container" style={{ maxWidth: '900px', marginTop: '50px' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <h2 className="mb-4 text-primary">Mon profil</h2>
+        <h2 className="mb-4 text-o-primary">Mon profil</h2>
       </div>
 
       <form onSubmit={handleSubmit} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
@@ -208,12 +210,16 @@ export default function ProfilPage() {
 
         <div style={{ gridColumn: '1 / -1', display: 'flex', justifyContent: 'flex-end', gap: '12px', marginTop: '24px' }}>
           {!editMode && (
-          <ButtonPrimaryy onClick={() => setEditMode(true)}>Modifier</ButtonPrimaryy>
+            <ButtonPrimaryy onClick={() => setEditMode(true)}>Modifier</ButtonPrimaryy>
           )}
           <ButtonSecondaryy type="button" onClick={() => router.push('/')}>Retour</ButtonSecondaryy>  
           {editMode && <ButtonPrimaryy type="submit">Mettre à jour</ButtonPrimaryy>}
         </div>
       </form>
+
+      <div style={{ marginTop: 40 }}>
+        <DemandesComponent />
+      </div>
     </div>
   );
 }

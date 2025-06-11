@@ -3,6 +3,7 @@
 import React, { useState, ChangeEvent } from 'react';
 import { Input, ButtonPrimaryy, ButtonSecondaryy } from '../../components/ui/ComponentForm';
 import { useRouter } from 'next/navigation';
+import { useUser } from '@/contexts/UserContext';
 
 export default function ConnexionPage() {
   const [email, setEmail] = useState('');
@@ -10,6 +11,7 @@ export default function ConnexionPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
+  const { login } = useUser();
 
   const handleEmailChange = (event: ChangeEvent<HTMLInputElement>) => {
     setEmail(event.target.value);
@@ -32,7 +34,9 @@ export default function ConnexionPage() {
     }
 
     try {
-      const response = await fetch('http://127.0.0.1:8000/api/connexion', {
+      const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
+
+      const response = await fetch(`${API_BASE_URL}/connexion`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -52,14 +56,13 @@ export default function ConnexionPage() {
         return;
       }
 
-      // Stockage du token et du rôle dans le localStorage
       localStorage.setItem('token', data.token);
       localStorage.setItem('role', data.utilisateur.role);
-      localStorage.setItem('userId', data.utilisateur.id);  // Ajout de l'ID utilisateur pour utilisation future
+      localStorage.setItem('userId', data.utilisateur.id);  
 
       const role = data.utilisateur.role;
+      login(data.token, data.utilisateur.role);
 
-      // Redirection en fonction du rôle
       if (role === 'admin') {
         router.push('/admin/dashboard');
       } else if (role === 'user') {
@@ -80,7 +83,7 @@ export default function ConnexionPage() {
 
   return (
     <div className="container" style={{ maxWidth: '400px', marginTop: '50px' }}>
-      <h2 className="text-center text-primary mb-4">Connexion</h2>
+      <h2 className="text-center text-o-primary mb-4">Connexion</h2>
       <form onSubmit={handleSubmit}>
         <Input
           label="Email"

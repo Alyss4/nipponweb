@@ -16,6 +16,7 @@ type Grade = {
   id: number;
   nom: string;
 };
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL as string;
 
 const genreMap: Record<string, string> = { H: 'Homme', F: 'Femme', M: 'Mixte' };
 
@@ -51,8 +52,8 @@ const TournoiForm: React.FC = () => {
         const headers = { Authorization: `Bearer ${token}` };
 
         const [catRes, gradesRes] = await Promise.all([
-          fetch('http://localhost:8000/api/categories/has/utilisateur', { headers }),
-          fetch('http://localhost:8000/api/grades', { headers }),
+          fetch(`${API_BASE_URL}/categories/has/utilisateur`, { headers }),
+          fetch(`${API_BASE_URL}/grades`, { headers }),
         ]);
 
         const [categoriesData, gradesData] = await Promise.all([catRes.json(), gradesRes.json()]);
@@ -93,27 +94,26 @@ const TournoiForm: React.FC = () => {
     }
   };
 
-  const isFormValid = () => {
-    const {
-      nom, date, systemeElimination, sponsor,
-      participantsLimit, gradeMin, gradeMax,
-      selectedCategorieId, lieu, description, genre,
-    } = formData;
+const isFormValid = () => {
+  const {
+    nom, date, systemeElimination, sponsor,
+    participantsLimit,
+    selectedCategorieId, lieu, description, genre,
+  } = formData;
 
-    return (
-      nom.trim() &&
-      date &&
-      systemeElimination &&
-      (!showSponsor || sponsor.trim()) &&
-      (!showLimit || (participantsLimit && !isNaN(+participantsLimit) && +participantsLimit > 0)) &&
-      gradeMin &&
-      gradeMax &&
-      selectedCategorieId &&
-      lieu.trim() &&
-      description.trim() &&
-      genre
-    );
-  };
+  return (
+    nom.trim() &&
+    date &&
+    systemeElimination &&
+    (!showSponsor || sponsor.trim()) &&
+    (!showLimit || (participantsLimit && !isNaN(+participantsLimit) && +participantsLimit > 0)) &&
+    selectedCategorieId &&
+    lieu.trim() &&
+    description.trim() &&
+    genre
+  );
+};
+
 
   const toggleGestionParticipants = () => {
     console.log('Form data:', formData);
@@ -168,12 +168,8 @@ const TournoiForm: React.FC = () => {
               onChange={(e) => updateForm('systemeElimination', e.target.value)}
               options={[
                 { value: '', label: 'Sélectionner un système' },
-                { value: 'Poule', label: 'Poules (tous contre tous)' },
-                { value: 'Elimination directe', label: 'Élimination directe (KO simple)' },
-                { value: 'Double elimination', label: 'Double élimination' },
-                { value: 'Tableau final', label: 'Poules + Phase finale' },
-                { value: 'Round robin', label: 'Round Robin' },
-                { value: 'Système suisse', label: 'Système suisse' },
+                { value: 'Poule ( tous contre tous )', label: 'Poules (tous contre tous)' },
+                { value: 'Poule ( Tableau final )', label: 'Poule ( Tableau final )' },
               ]}
             />
             <Checkbox

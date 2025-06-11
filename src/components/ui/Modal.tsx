@@ -11,6 +11,7 @@ interface ModalProps {
   children: React.ReactNode;
   tournoi?: { id: number } | null;
 }
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL as string;
 
 const LaModal: React.FC<ModalProps> = ({ opened, onClose, title, children, tournoi }) => {
   const router = useRouter();
@@ -22,7 +23,7 @@ const LaModal: React.FC<ModalProps> = ({ opened, onClose, title, children, tourn
       const tournoiId = tournoi?.id;
       if (!tournoiId) return;
 
-      const userRes = await fetch('http://localhost:8000/api/getIDCompetiteurUtilisateur', {
+      const userRes = await fetch(`${API_BASE_URL}/getIDCompetiteurUtilisateur`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       const userData = await userRes.json();
@@ -32,7 +33,7 @@ const LaModal: React.FC<ModalProps> = ({ opened, onClose, title, children, tourn
         return;
       }
 
-      const insRes = await fetch('http://localhost:8000/api/inscrireAuTournoiDejaCompetiteur', {
+      const insRes = await fetch(`${API_BASE_URL}/inscrireAuTournoiDejaCompetiteur`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -72,7 +73,7 @@ const LaModal: React.FC<ModalProps> = ({ opened, onClose, title, children, tourn
 
         <div style={styles.footer}>
           <ButtonSecondaryy onClick={onClose}>Fermer</ButtonSecondaryy>
-          {tournoi?.id && (
+          {tournoi?.id && localStorage.getItem('token') && (
             <ButtonPrimaryy onClick={handleInscription}>
               S'inscrire
             </ButtonPrimaryy>

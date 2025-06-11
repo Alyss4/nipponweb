@@ -9,6 +9,14 @@ import { parseCSV } from '../../app/inscriptiontournois/components/gestionPartic
 import { Grade, GestionParticipantsProps, Pays, Club } from '../../app/inscriptiontournois/components/gestionParticipants/types';
 import { fetchGrades,fetchClub, fetchPays, handleCSVImport, handleCreateTournoi } from '../../app/inscriptiontournois/components/gestionParticipants/logic';
 import { useRouter } from 'next/navigation';
+const sanitizeParticipant = (participant: any) => ({
+  ...participant,
+  id_grade: participant.id_grade ? Number(participant.id_grade) : null,
+  id_club: participant.id_club ? Number(participant.id_club) : null,
+  id_pays: participant.id_pays ? Number(participant.id_pays) : null,
+  poids: participant.poids ? Number(participant.poids) : null,
+});
+
 
 const GestionParticipants: React.FC<GestionParticipantsProps> = ({ formData }) => {
   const [importType, setImportType] = useState<'CSV' | 'Manuellement'>('Manuellement');
@@ -26,10 +34,11 @@ const GestionParticipants: React.FC<GestionParticipantsProps> = ({ formData }) =
     <div className="container mt-5">
       <h2 className="text-center text-o-primary mb-5">Gestion des Participants</h2>
 
-      <ButtonSecondaryy onClick={() => console.log("Données du formulaire :", formData)}>
-        Afficher les données du formulaire
-      </ButtonSecondaryy>
-
+      <Checkbox
+        label="Autoriser les inscriptions externes"
+        checked={autoriserInscriptionExterne}
+        onChange={(e) => setAutoriserInscriptionExterne(e.target.checked)}
+      />
       <Checkbox
         label="Ajouter les participants plus tard"
         checked={ajoutParticipantsPlusTard}
@@ -55,17 +64,11 @@ const GestionParticipants: React.FC<GestionParticipantsProps> = ({ formData }) =
           )}
         </>
       )}
-
-      <Checkbox
-        label="Autoriser les inscriptions externes"
-        checked={autoriserInscriptionExterne}
-        onChange={(e) => setAutoriserInscriptionExterne(e.target.checked)}
-      />
-
       <div className="d-flex gap-2 mt-3">
         <ButtonPrimaryy
           onClick={async () => {
-            const tournoi = await handleCreateTournoi(formData, "lance", participants, ajoutParticipantsPlusTard);
+            const sanitized = participants.map(sanitizeParticipant);
+            const tournoi = await handleCreateTournoi(formData, "lance", sanitized, ajoutParticipantsPlusTard);
             if (tournoi && tournoi.id) {
               router.push(`/poules/${tournoi.id}`);
             }
@@ -74,9 +77,22 @@ const GestionParticipants: React.FC<GestionParticipantsProps> = ({ formData }) =
           Continuer et lancer
         </ButtonPrimaryy>
 
-        <ButtonSecondaryy onClick={() => handleCreateTournoi(formData, "inscriptions_ouvertes", participants, ajoutParticipantsPlusTard)}>
+        <ButtonSecondaryy
+          onClick={async () => {
+            const tournoi = await handleCreateTournoi(
+              formData,
+              "inscriptions_ouvertes",
+              participants,
+              ajoutParticipantsPlusTard
+            );
+            if (tournoi && tournoi.id) {
+              router.push('/'); 
+            }
+          }}
+        >
           Enregistrer et ouvrir les inscriptions
         </ButtonSecondaryy>
+
       </div>
 
       {!ajoutParticipantsPlusTard && <ParticipantTable participants={participants} />}

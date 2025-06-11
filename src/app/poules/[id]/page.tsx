@@ -6,6 +6,8 @@ import { useEffect, useState } from 'react';
 import DragDropPoules from '@/components/componentsPages/DragDropPoules';
 import { useRouter } from 'next/navigation';
 
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL as string;
+
 interface Competiteur {
   id: number;
   nom: string;
@@ -43,7 +45,7 @@ export default function Poules() {
     const fetchCompetiteurs = async () => {
       try {
         const token = localStorage.getItem('token');
-        const response = await fetch(`http://localhost:8000/api/tournois/${tournoiId}/competiteurs`, {
+        const response = await fetch(`${API_BASE_URL}/tournois/${tournoiId}/competiteurs`, {
           headers: {
             'Content-Type': 'application/json',
             Authorization: `Bearer ${token}`,
@@ -76,7 +78,7 @@ export default function Poules() {
     const fetchTournoi = async () => {
       try {
         const token = localStorage.getItem('token');
-        const response = await fetch(`http://localhost:8000/api/tournois/${tournoiId}`, {
+        const response = await fetch(`${API_BASE_URL}/tournois/${tournoiId}`, {
           headers: {
             'Content-Type': 'application/json',
             Authorization: `Bearer ${token}`,
@@ -124,7 +126,7 @@ export default function Poules() {
     const nombrePoules = parseInt(nombrePoulesInput) || 1;
 
     switch (tournoi.systemeElimination) {
-      case 'Poule': {
+      case 'Poule ( tous contre tous )': {
         const poulesPoule: Poule[] = Array.from({ length: nombrePoules }, (_, index) => ({
           id: index + 1,
           competiteurs: [],
@@ -133,6 +135,19 @@ export default function Poules() {
           poulesPoule[index % nombrePoules].competiteurs.push(competiteur);
         });
         setPoules(poulesPoule);
+        setMatchs([]);
+        break;
+      }
+      case 'Poule ( Tableau final )':
+      {
+        const poulesTableauFinal: Poule[] = Array.from({ length: nombrePoules }, (_, index) => ({
+          id: index + 1,
+          competiteurs: [],
+        }));
+        competiteursShuffled.forEach((competiteur, index) => {
+          poulesTableauFinal[index % nombrePoules].competiteurs.push(competiteur);
+        });
+        setPoules(poulesTableauFinal);
         setMatchs([]);
         break;
       }
@@ -179,38 +194,37 @@ export default function Poules() {
         break;
     }
   };
-const handleSavePoules = async () => {
-  try {
-    const token = localStorage.getItem('token');
-    const response = await fetch(`http://localhost:8000/api/tournois/${tournoiId}/poules`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify({
-        poules: poules.map((p, index) => ({
-          numero: index + 1,
-          competiteurs: p.competiteurs.map(c => ({ id: c.id })),
-        })),
-      }),
-    });
+  const handleSavePoules = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`${API_BASE_URL}/tournois/${tournoiId}/poules`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          poules: poules.map((p, index) => ({
+            numero: index + 1,
+            competiteurs: p.competiteurs.map(c => ({ id: c.id })),
+          })),
+        }),
+      });
 
-    if (!response.ok) {
-      const errorData = await response.json();
-      console.error("Erreur API :", errorData);
-      alert("Erreur lors de l'enregistrement des poules.");
-      return;
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error("Erreur API :", errorData);
+        alert("Erreur lors de l'enregistrement des poules.");
+        return;
+      }
+
+      alert("Poules enregistrées avec succès !");
+      router.push(`/poules/${tournoiId}/matchs`);
+    } catch (error) {
+      console.error("Erreur réseau :", error);
+      alert("Erreur de communication avec le serveur.");
     }
-
-    alert("Poules enregistrées avec succès !");
-    router.push(`/poules/${tournoiId}/matchs`);
-  } catch (error) {
-    console.error("Erreur réseau :", error);
-    alert("Erreur de communication avec le serveur.");
-  }
-};
-
+  };
   return (
     <div className="text-o-primary p-5">
       <h1 className="text-2xl font-bold mb-4">

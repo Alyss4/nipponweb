@@ -1,21 +1,21 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
-  --text-primary: #023047;
-  --text-o-primary: #023047;
+  --text-primary: #212529;
+  --text-o-primary: #212529;
   --text-secondary: #F5F7F8;
-  --bg-primary: #023047;
+  --bg-primary: #212529;
   --bg-secondary: #F5F7F8;
 
-  --bg-button-primary : #023047;
+  --bg-button-primary : #212529;
   --border-button-primary :  #F5F7F8;
   --text-button-primary : #FFF;
-  --bg-button-primary-hover : #035066;
+  --bg-button-primary-hover : #111416;
 
   --bg-button-secondary : #F5F7F8;
-  --border-button-secondary :  #023047;
-  --text-button-secondary : #023047;
-  --bg-button-secondary-hover : #dfe5e8;
+  --border-button-secondary :  #212529;
+  --text-button-secondary : #363c42;
+  --bg-button-secondary-hover : rgba(192, 192, 192, 0.37);
 
 }
 .text-o-primary {

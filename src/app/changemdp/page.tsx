@@ -37,7 +37,7 @@ export default function ChangeMdp() {
 
   return (
     <div className="container" style={{ maxWidth: '400px', marginTop: '50px' }}>
-      <h2 className="text-center text-primary mb-4">Changer le mot de passe</h2>
+      <h2 className="text-center text-o-primary mb-4">Changer le mot de passe</h2>
       <form onSubmit={handleSubmit}>
         <Input
           label="Email"

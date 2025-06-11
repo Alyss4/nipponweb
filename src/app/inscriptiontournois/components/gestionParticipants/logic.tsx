@@ -1,9 +1,10 @@
 import { Grade, Participant, Pays, Club } from "./types";
 
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL as string;
 
 export const fetchGrades = async (setGrades: React.Dispatch<React.SetStateAction<Grade[]>>) => {
   try {
-    const response = await fetch('http://localhost:8000/api/grades', {
+    const response = await fetch(`${API_BASE_URL}/grades`, {
       headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
     });
     const result = await response.json();
@@ -12,29 +13,29 @@ export const fetchGrades = async (setGrades: React.Dispatch<React.SetStateAction
     console.error("Erreur lors du chargement des grades:", error);
   }
 };
-//TODO
-export const fetchPays = async (setPays: React.Dispatch<React.SetStateAction<Pays[]>>)=>{
-    try{
-        const response = await fetch ('http://localhost:8000/api/pays',{
-            headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
-        });
-        const result = await response.json();
-        setPays(result);
-      } catch (error) {
-        console.error("Erreur lors du chargement des pays:", error);
-      }
+
+export const fetchPays = async (setPays: React.Dispatch<React.SetStateAction<Pays[]>>) => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/pays`, {
+      headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+    });
+    const result = await response.json();
+    setPays(result);
+  } catch (error) {
+    console.error("Erreur lors du chargement des pays:", error);
+  }
 };
-//TODO
-export const fetchClub = async (setClub: React.Dispatch<React.SetStateAction<Club[]>>)=>{
-    try{
-        const response = await fetch ('http://localhost:8000/api/clubs',{
-            headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
-        });
-        const result = await response.json();
-        setClub(result);
-      } catch (error) {
-        console.error("Erreur lors du chargement des clubs:", error);
-      }
+
+export const fetchClub = async (setClub: React.Dispatch<React.SetStateAction<Club[]>>) => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/clubs`, {
+      headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+    });
+    const result = await response.json();
+    setClub(result);
+  } catch (error) {
+    console.error("Erreur lors du chargement des clubs:", error);
+  }
 };
 
 export const handleCSVImport = (
@@ -56,20 +57,27 @@ export const handleCSVImport = (
 
 const handleCreateParticipants = async (tournoiId: number, participants: Participant[]) => {
   try {
-    const response = await fetch(`http://localhost:8000/api/tournois/${tournoiId}/participants`, {
+    const participantsWithTournoi = participants.map(p => ({
+      ...p,
+      id_tournoi: tournoiId,
+    }));
+
+    const response = await fetch(`${API_BASE_URL}/tournois/${tournoiId}/participants`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         Authorization: `Bearer ${localStorage.getItem('token')}`,
       },
-      body: JSON.stringify({ participants }),
+      body: JSON.stringify({ participants: participantsWithTournoi }),
     });
+
     if (!response.ok) throw new Error("Erreur lors de l'enregistrement des participants");
   } catch (err) {
     alert("Échec de l'ajout des participants.");
     console.error(err);
   }
 };
+
 export const handleCreateTournoi = async (
   formData: any,
   statut: string,
@@ -104,7 +112,7 @@ export const handleCreateTournoi = async (
       statut,
     };
 
-    const response = await fetch('http://localhost:8000/api/tournois', {
+    const response = await fetch(`${API_BASE_URL}/tournois`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
