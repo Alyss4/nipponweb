@@ -26,7 +26,6 @@ export default function ConnexionPage() {
     setError(null);
     setLoading(true);
 
-    // Vérification de la validité de l'email
     if (!email || !/\S+@\S+\.\S+/.test(email)) {
       setError('Veuillez entrer un email valide.');
       setLoading(false);
