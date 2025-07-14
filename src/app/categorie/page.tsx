@@ -4,6 +4,11 @@ import { Input, Checkbox, ButtonPrimaryy, Select } from '../../components/ui/Com
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL as string;
 
+type Grade = {
+  id: number;
+  nom: string;
+};
+
 
 export default function Categorie() {
   const [nom, setNom] = useState('');
@@ -15,8 +20,8 @@ export default function Categorie() {
   const [gradeMax, setGradeMax] = useState('');
   const [gradeMinRequired, setGradeMinRequired] = useState(false);
   const [gradeMaxRequired, setGradeMaxRequired] = useState(false);
-  const [sexe, setSexe] = useState('Homme'); // Default to 'Homme'
-  const [grades, setGrades] = useState([]);
+  const [sexe, setSexe] = useState('Homme'); 
+  const [grades, setGrades] = useState<Grade[]>([]);
   const [message, setMessage] = useState('');
   const [erreur, setErreur] = useState('');
   const [noPoidsRestriction, setNoPoidsRestriction] = useState(false);
@@ -244,7 +249,7 @@ export default function Categorie() {
               label="Grade minimum"
               value={gradeMin}
               onChange={(e) => setGradeMin(e.target.value)}
-              options={grades.map(grade => ({ value: grade.id, label: grade.nom }))}
+              options={grades.map(grade => ({ value: grade.id.toString(), label: grade.nom }))}
             />
           </div>
         )}
@@ -255,7 +260,7 @@ export default function Categorie() {
               label="Grade maximum"
               value={gradeMax}
               onChange={(e) => setGradeMax(e.target.value)}
-              options={grades.map(grade => ({ value: grade.id, label: grade.nom }))}
+              options={grades.map(grade => ({ value: grade.id.toString(), label: grade.nom }))}
             />
           </div>
         )}
