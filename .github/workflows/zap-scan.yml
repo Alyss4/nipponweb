@@ -30,20 +30,23 @@ jobs:
       - name: Start Next.js app
         run: |
           npm start &
-          sleep 10
+          sleep 15
 
       - name: Run OWASP ZAP Baseline Scan
         uses: zaproxy/action-baseline@v0.11.0
         with:
           target: 'http://localhost:3000'
-          fail_action: false  
-          cmd_options: '-a'
+          fail_action: false
+          cmd_options: '-J /zap/wrk/report_json.json -w /zap/wrk/report_md.md -r /zap/wrk/report_html.html -a'
+
+      - name: List generated report files (debug)
+        run: ls -lh /home/runner/work/nipponweb/nipponweb
 
       - name: Upload ZAP report
         uses: actions/upload-artifact@v4
         with:
-          name: zapreport  
+          name: zapreport
           path: |
-            report_json.json
-            report_md.md
-            report_html.html
+            /home/runner/work/nipponweb/nipponweb/report_json.json
+            /home/runner/work/nipponweb/nipponweb/report_md.md
+            /home/runner/work/nipponweb/nipponweb/report_html.html
