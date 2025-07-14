@@ -43,17 +43,6 @@ export default function Dashboard() {
   }, []);
   const allButtonsDisabled = hasCategories === null;
 
-  const handleCreateTournoi = () => {
-    if (hasCategories === null) {
-      alert("Chargement des catégories, veuillez patienter.");
-      return;
-    }
-    if (hasCategories) {
-      router.push('/tournois');
-    } else {
-      alert("Vous devez d'abord créer des catégories avant de créer un tournoi.");
-    }
-  };
 
 const MyButton = (props: React.ComponentProps<typeof Button>) => (
   <Button {...props} disabled={allButtonsDisabled || props.disabled} />
@@ -66,7 +55,7 @@ const MyButton = (props: React.ComponentProps<typeof Button>) => (
           <>
             <MyButton icon={FaLayerGroup} label="Créer Catégories" href="/categorie" />          
             <MyButton icon={FaUsersCog} label="Gérer Utilisateurs" href="/roles"/>
-            <MyButton icon={FaUserPlus} label="Créer Tournoi" onClick={handleCreateTournoi} />
+            <MyButton icon={FaUserPlus} label="Créer Tournoi" href='/tournois'/>
             <MyButton icon={FaTrophy} label="Voir Tournoi" href="/lancertournoi" />
             <MyButton icon={FaUserCircle} label="Mon Profil" href="/profil" />
           </>
@@ -75,7 +64,7 @@ const MyButton = (props: React.ComponentProps<typeof Button>) => (
         return (
           <>
             <MyButton icon={FaLayerGroup} label="Créer Catégories" href="/categorie" />
-            <MyButton icon={FaUserPlus} label="Créer Tournoi" onClick={handleCreateTournoi} />
+            <MyButton icon={FaUserPlus} label="Créer Tournoi" href='/tournois'/>
             <MyButton icon={FaTrophy} label="Lancer un tournoi" href="/lancertournoi" />
             <MyButton icon={FaUserCircle} label="Mon Profil" href="/profil" />
           </>
