@@ -52,6 +52,7 @@ const FormulaireParticipant: React.FC<FormulaireParticipantProps> = ({
         <Input
           type="date"
           label="Date de naissance"
+          placeholder=''
           value={newParticipant.date_naissance}
           onChange={handleInputChange}
           data-field="date_naissance"
@@ -61,7 +62,8 @@ const FormulaireParticipant: React.FC<FormulaireParticipantProps> = ({
         <Input
           type="number"
           label="Poids"
-          value={newParticipant.poids || ''}
+          placeholder=''
+          value={newParticipant.poids !== undefined && newParticipant.poids !== null ? String(newParticipant.poids) : ''}
           onChange={handleInputChange}
           data-field="poids"
         />
@@ -69,7 +71,7 @@ const FormulaireParticipant: React.FC<FormulaireParticipantProps> = ({
       <div className="col-md-4">
         <Select
           label="Club"
-          value={newParticipant.id_club ?? ''}
+          value={newParticipant.id_club !== undefined && newParticipant.id_club !== null ? String(newParticipant.id_club) : ''}
           onChange={handleInputChange}
           data-field="id_club"
           options={clubs.map((club) => ({ value: club.id.toString(), label: club.nom ?? 'Sans nom' }))}
@@ -78,7 +80,7 @@ const FormulaireParticipant: React.FC<FormulaireParticipantProps> = ({
       <div className="col-md-4">
         <Select
           label="Grade"
-          value={newParticipant.id_grade ?? ''}
+          value={newParticipant.id_grade !== undefined && newParticipant.id_grade !== null ? String(newParticipant.id_grade) : ''}
           onChange={handleInputChange}
           data-field="id_grade"
           options={grades.map((g) => ({ value: g.id.toString(), label: g.nom }))}
@@ -96,7 +98,7 @@ const FormulaireParticipant: React.FC<FormulaireParticipantProps> = ({
       <div className="col-md-4">
         <Select
           label="Pays"
-          value={newParticipant.id_pays ?? ''}
+          value={newParticipant.id_pays !== undefined && newParticipant.id_pays !== null ? String(newParticipant.id_pays) : ''}
           onChange={handleInputChange}
           data-field="id_pays"
           options={pays.map((p) => ({ value: p.id.toString(), label: `${p.drapeau_emoji ?? ''} ${p.nom}` }))}

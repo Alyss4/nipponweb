@@ -113,7 +113,7 @@ export default function ModifierTournoiPage() {
         <Input
           label="Nombre de participants"
           type="number"
-          value={tournoi.nombre_participants ?? ''}
+          value={tournoi.nombre_participants !== undefined ? String(tournoi.nombre_participants) : ''}
           onChange={(e) => updateField('nombre_participants', Number(e.target.value))}
           placeholder=""
         />
@@ -121,7 +121,7 @@ export default function ModifierTournoiPage() {
         <Input
           label="Nombre de poules"
           type="number"
-          value={tournoi.nombre_poules ?? ''}
+          value={tournoi.nombre_poules !== undefined ? String(tournoi.nombre_poules) : ''}
           onChange={(e) => updateField('nombre_poules', Number(e.target.value))}
           placeholder=""
         />

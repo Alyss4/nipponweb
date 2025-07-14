@@ -4,10 +4,11 @@ import React, { useState, ChangeEvent } from 'react';
 interface InputProps {
   label: string;
   type: string;
-  placeholder: string;
+  placeholder?: string;
   value: string;
   onChange: (event: ChangeEvent<HTMLInputElement>) => void;
   required?: boolean;
+  disabled?: boolean;
   accept?: string; 
 }
 
