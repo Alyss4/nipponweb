@@ -1,14 +1,10 @@
-'use client';
+import { Suspense } from 'react';
+import FormulaireInscription from './components/FormulaireInscription';
 
-import React, { useState, ChangeEvent } from 'react';
-import { Input, Select, Radio, Checkbox, ButtonPrimaryy } from '../../components/ui/ComponentForm';
-import FormulaireInscription from './components/FormulaireInscription'
-
-export default function inscriptiontournois() {
- 
+export default function InscriptionTournoisPage() {
   return (
-    <>
-      <FormulaireInscription/>
-    </>
+    <Suspense fallback={<div>Chargement du formulaire...</div>}>
+      <FormulaireInscription />
+    </Suspense>
   );
 }
