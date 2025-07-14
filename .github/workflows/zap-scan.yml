@@ -44,3 +44,4 @@ jobs:
         with:
           name: zap-report
           path: owasp-zap-report.html
+          fail_action: false
